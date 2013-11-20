@@ -1,0 +1,14 @@
+---------------
+| Quick Start |
+---------------
+<set up pyROOT>                                      # eg. with a CMSSW area: cd /<somepath>/CMSSW_5_3_7/src && cmsenv
+git clone https://github.com/elaird/supy-delphes.git # clone repo
+cd supy-delphes
+git submodule update --init                          # clone supy
+source env.sh                                        # add supy directory to your python path; add supy to your path
+supy example.py --loop 1                             # run the example
+
+----------------
+| Dependencies |
+----------------
+ROOT (>=5.27.06) and python (2.x, x>=6) are required.
