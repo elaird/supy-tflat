@@ -1,4 +1,5 @@
 import supy
+import calculables
 import ROOT as r
 
 class example(supy.analysis):
@@ -20,24 +21,27 @@ class example(supy.analysis):
 
     def listOfSampleDictionaries(self):
         h = supy.samples.SampleHolder()
-        # xs in pb  (hacked to accommodate PAT skim)
+        # xs in pb
         h.add("H300_hh_bbtautau",
               '["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/gg/analysis_signal.root"]',
-              xs=0.0159 * 1932./8100.)
+              xs=0.0159)
         h.add("ZZ_2l2q",
               '["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/zz/analysis_zz.root"]',
-              xs=2.5 * 1760./6226.)
+              xs=2.5)
         h.add("tt_bbll",
               '["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/tt/analysis_tt.root"]',
-              xs=26.1975 * 4052./10832.)
+              xs=26.1975)
         return [h]
 
 
     def listOfSamples(self, pars):
         from supy.samples import specify
-        return (specify(names="H300_hh_bbtautau", color=r.kBlue, nFilesMax=None) +
-                specify(names="ZZ_2l2q", color=r.kRed, nFilesMax=None) +
-                specify(names="tt_bbll", color=28, nFilesMax=None) +
+
+        w = calculables.LastBinOverFirstBin(dir="TT", histoName="results")
+
+        return (specify(names="H300_hh_bbtautau", weights=w, color=r.kBlue, nFilesMax=None) +
+                specify(names="ZZ_2l2q", weights=w, color=r.kRed, nFilesMax=None) +
+                specify(names="tt_bbll", weights=w, color=28, nFilesMax=None) +
                 []
                 )
 
