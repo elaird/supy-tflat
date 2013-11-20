@@ -48,6 +48,15 @@ class example(supy.analysis):
 
     def conclude(self, pars):
         org = self.organizer(pars)
+
+        def gopts(name="", color=1):
+            return {"name":name, "color":color, "markerStyle":1, "lineWidth":2, "goptions":"ehist"}
+
+        for sample, color in [("H300_hh_bbtautau", r.kBlue),
+                              ("ZZ_2l2q", r.kRed),
+                              ("tt_bbll", 28)]:
+            org.mergeSamples(targetSpec=gopts(sample, color), sources=[sample+".LastBinOverFirstBin"])
+
         org.scale(1.0e3) # pb
         #org.scale(toPdf=True)
 
