@@ -8,8 +8,10 @@ class displayer(supy.steps.displayer):
                        {"fixes":("J", ""), "nMax":4, "color":r.kBlue, "width":1, "style":1},
                        ],
                  nMaxParticles=4,
-                 particles=[("b", r.kRed),
-                            ("tau", r.kCyan),
+                 particles=[("genB", r.kRed, 0.15),
+                            ("genTau", r.kCyan, 0.15),
+                            ("genMu", r.kMagenta+1, 0.05),
+                            ("genEle", r.kOrange, 0.05),
                             ],
                  nMaxDiTaus=4,
                  taus={"color":r.kGreen+2, "width":1, "style":1},
@@ -68,7 +70,7 @@ class displayer(supy.steps.displayer):
             return eventVars["%s%d%s%s" % (fixes[0], 1+iJet, fixes[1], s)]
 
         self.prepareText(params, coords)
-        self.printText(str(fixes))
+        self.printText("".join(fixes))
         headers = "   csv    pT   eta   phi  mass"
         self.printText(headers)
         self.printText("-" * len(headers))
@@ -93,7 +95,7 @@ class displayer(supy.steps.displayer):
             return eventVars["%s%s" % (particles, s)].at(iJet)
 
         self.prepareText(params, coords)
-        self.printText("gen "+particles)
+        self.printText(particles)
         headers = "   pT   eta   phi  mass"
         self.printText(headers)
         self.printText("-" * len(headers))
@@ -325,7 +327,7 @@ class displayer(supy.steps.displayer):
         defWidth=1
 
         arrowSize = defArrowSize
-        for particles, color in self.particles:
+        for particles, color, size in self.particles:
             self.drawJets(eventVars=eventVars,
                           fixes=(particles, ""),
                           vec=True,
@@ -333,7 +335,7 @@ class displayer(supy.steps.displayer):
                           coords=rhoPhiCoords,
                           lineColor=color,
                           arrowSize=arrowSize,
-                          circleRadius=0.15,
+                          circleRadius=size,
                           rhoPhiPad=rhoPhiPad,
                           etaPhiPad=etaPhiPad,
                           )
@@ -414,15 +416,18 @@ class displayer(supy.steps.displayer):
                            highlight=False)
             y -= s*(5 + d["nMax"])
 
-        for (particles, color) in self.particles:
+        for i, (particles, color, size) in enumerate(self.particles):
             self.printGenParticles(eventVars,
                                    params=smaller,
                                    particles=particles,
                                    color=color,
-                                   coords={"x": x0, "y": y},
+                                   coords={"x": x0+(0.5 if i%2 else 0.0), "y": y},
                                    nMax=self.nMaxParticles)
-            y -= s*(5 + self.nMaxParticles)
+            if i % 2:
+                y -= s*(5 + self.nMaxParticles)
 
+        if not (i % 2):
+            y -= s*(5 + self.nMaxParticles)
         self.printDiTaus(eventVars,
                          params=smaller,
                          coords={"x": x0, "y": y},
