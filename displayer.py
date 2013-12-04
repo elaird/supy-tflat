@@ -11,11 +11,12 @@ class displayer(supy.steps.displayer):
                  particles=[("b", r.kRed),
                             ("tau", r.kCyan),
                             ],
-                 nMaxTaus=4,
+                 nMaxDiTaus=4,
+                 taus={"color":r.kGreen+2, "width":1, "style":1},
                  ):
         self.moreName = "(see below)"
 
-        for item in ["scale", "jets", "nMaxParticles", "particles", "nMaxTaus"]:
+        for item in ["scale", "jets", "nMaxParticles", "particles", "nMaxDiTaus", "taus"]:
             setattr(self, item, eval(item))
 
         self.titleSizeFactor = 1.0
@@ -111,27 +112,41 @@ class displayer(supy.steps.displayer):
         return
 
 
-    def printTaus(self, eventVars=None, params=None, coords=None,
-                  nMax=None, color=r.kBlack, ptMin=None):
+    def printDiTaus(self, eventVars=None, params=None, coords=None,
+                    nMax=None, color=r.kBlack, ptMin=None):
         self.prepareText(params, coords)
 
-        self.printText("taus")
-        headers = "   pT  eta  phi  iso"
+        self.printText("di-taus")
+        headers = "cmee    pT   eta   phi  mass   iso*"
         self.printText(headers)
         self.printText("-" * len(headers))
 
-        for iLepton in range(nLeptons):
-            if nMax <= iLepton:
-                self.printText("[%d more not listed]" % (nLeptons - nMax))
+        nDiTaus = eventVars["pt1"].size()
+        for iDiTau in range(nDiTaus):
+            if nMax <= iDiTau:
+                self.printText("[%d more not listed]" % (nDiTaus - nMax))
                 break
 
-            lepton = eventVars[leptons][iLepton]
-            iso = "%4.1f" % lepton.IsolationVar if hasattr(lepton, "IsolationVar") else "    "
-            self.printText("%5.0f %s %4.1f %s" % (lepton.PT,
-                                                  lepton.Phi,
-                                                  iso,
-                                                  ),
-                           color=color)
+            for iTau in [1, 2]:
+                c = eventVars["charge%d" % iTau].at(iDiTau)
+                if c > 0:
+                    s = "+"
+                elif c < 0:
+                    s = "-"
+                else:
+                    s = "@"
+                values = (s,
+                          eventVars["againstMuonLoose%d" % iTau].at(iDiTau),
+                          eventVars["againstElectronLoose%d" % iTau].at(iDiTau),
+                          eventVars["againstElectronLooseMVA3_%d" % iTau].at(iDiTau),
+                          eventVars["pt%d" % iTau].at(iDiTau),
+                          eventVars["eta%d" % iTau].at(iDiTau),
+                          eventVars["phi%d" % iTau].at(iDiTau),
+                          eventVars["m%d" % iTau].at(iDiTau),
+                          eventVars["iso%d" % iTau].at(iDiTau),
+                          )
+                self.printText("%1s%1d%1d%1d %5.0f %5.1f %5.1f %5.1f %5.1f" % values, color=color)
+            self.printText(" ")
         return
 
 
@@ -255,6 +270,30 @@ class displayer(supy.steps.displayer):
                         circleRadius=circleRadius)
 
 
+    def drawTaus(self, eventVars=None,
+                 coords=None, lineColor=None, lineWidth=1, lineStyle=1,
+                 arrowSize=-1.0, circleRadius=None, rhoPhiPad=None, etaPhiPad=None):
+
+        self.legendFunc(lineColor=lineColor, lineStyle=lineStyle, name="reco. taus", desc="reco. taus")
+
+        nDiTaus = eventVars["pt1"].size()
+        for iDiTau in range(nDiTaus):
+            for iTau in [1, 2]:
+                self.drawP4(rhoPhiPad=rhoPhiPad,
+                            etaPhiPad=etaPhiPad,
+                            coords=coords,
+                            p4=supy.utils.LorentzV(eventVars["pt%d" % iTau].at(iDiTau),
+                                                   eventVars["eta%d" % iTau].at(iDiTau),
+                                                   eventVars["phi%d" % iTau].at(iDiTau),
+                                                   eventVars["m%d" % iTau].at(iDiTau),
+                                                   ),
+                            lineColor=lineColor,
+                            lineWidth=lineWidth,
+                            lineStyle=lineStyle,
+                            arrowSize=arrowSize,
+                            circleRadius=circleRadius)
+
+
     def etaPhiPad(self, eventVars, corners):
         pad = r.TPad("etaPhiPad", "etaPhiPad",
                      corners["x1"], corners["y1"],
@@ -316,6 +355,18 @@ class displayer(supy.steps.displayer):
                           )
             arrowSize *= 0.8
 
+        self.drawTaus(eventVars=eventVars,
+                      coords=rhoPhiCoords,
+                      lineColor=self.taus["color"],
+                      lineWidth=self.taus["width"],
+                      lineStyle=self.taus["style"],
+                      arrowSize=arrowSize,
+                      circleRadius=0.25,
+                      rhoPhiPad=rhoPhiPad,
+                      etaPhiPad=etaPhiPad,
+                      )
+        arrowSize *= 0.8
+
 
     def drawLegend(self, corners) :
         pad = r.TPad("legendPad", "legendPad", corners["x1"], corners["y1"], corners["x2"], corners["y2"])
@@ -351,10 +402,9 @@ class displayer(supy.steps.displayer):
 
         yy = 0.98
         x0 = 0.01
-        x1 = 0.51
         self.printEvent(eventVars, params=defaults, coords={"x": x0, "y": yy})
 
-        y = yy - 7*s
+        y = yy - 5*s
         for d in self.jets:
             self.printJets(eventVars,
                            params=smaller,
@@ -372,6 +422,12 @@ class displayer(supy.steps.displayer):
                                    coords={"x": x0, "y": y},
                                    nMax=self.nMaxParticles)
             y -= s*(5 + self.nMaxParticles)
+
+        self.printDiTaus(eventVars,
+                         params=smaller,
+                         coords={"x": x0, "y": y},
+                         nMax=self.nMaxDiTaus)
+        y -= s*(5 + self.nMaxDiTaus)
 
         self.canvas.cd()
         pad.Draw()
@@ -393,12 +449,6 @@ class displayer(supy.steps.displayer):
 
         y = 0.98 - 2*s
         x0 = 0.01
-
-        self.printTaus(eventVars,
-                       params=defaults,
-                       coords={"x": x0, "y": y},
-                       nMax=self.nMaxTaus)
-        y -= s*(5 + self.nMaxTaus)
 
         self.canvas.cd()
         pad.Draw()
