@@ -26,7 +26,7 @@ class example(supy.analysis):
         # xs in pb
         h.add("H300_hh_bbtautau",
               #'["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/gg/analysis_signal.root"]',
-              '["/afs/hep.wisc.edu/home/elaird/analysis.root"]',
+              '["/scratch/zmao/analysis.root"]',
               xs=0.0159)
         h.add("ZZ_2l2q",
               '["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/zz/analysis_zz.root"]',
