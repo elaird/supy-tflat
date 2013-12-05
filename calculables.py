@@ -2,6 +2,10 @@ import supy
 import ROOT as r
 
 class LastBinOverFirstBin(supy.wrappedChain.calculable):
+    @property
+    def name(self):
+        return "LastBinOverBin%d" % self.firstBin
+
     def __init__(self, dir="", histoName="", firstBin=1):
         self.hPath = "%s/%s" % (dir, histoName)
         self.firstBin = firstBin
