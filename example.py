@@ -7,11 +7,11 @@ class example(supy.analysis):
     
     def listOfSteps(self, pars):
         return [supy.steps.printer.progressPrinter(),
-                #supy.steps.histos.multiplicity("tauPt"),
-                #supy.steps.filters.multiplicity("tauPt", min=2, max=2),
-                #supy.steps.histos.multiplicity("bPt"),
-                #supy.steps.filters.multiplicity("bPt", min=2, max=2),
-                displayer.displayer(),
+                #supy.steps.histos.multiplicity("genTauPt"),
+                #supy.steps.filters.multiplicity("genTauPt", min=2, max=2),
+                supy.steps.histos.multiplicity("genBPt"),
+                #supy.steps.filters.multiplicity("genBPt", min=2, max=2),
+                #displayer.displayer(),
                 ]
 
 
@@ -31,6 +31,11 @@ class example(supy.analysis):
         h.add("ZZ_2l2q",
               '["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/zz/analysis_zz.root"]',
               xs=2.5)
+
+        h.add("ZZ_2l2q_100",
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/ZZ-SUB-TT/")',
+              xs=2.5)
+
         h.add("tt_bbll",
               '["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/tt/analysis_tt.root"]',
               xs=26.1975)
@@ -41,8 +46,10 @@ class example(supy.analysis):
         from supy.samples import specify
 
         w = calculables.LastBinOverFirstBin(dir="TT", histoName="results")
+        w2 = calculables.LastBinOverFirstBin(dir="TT", histoName="results", firstBin=2)
 
-        return (specify(names="H300_hh_bbtautau", color=r.kBlue, nFilesMax=None) +
+        return (#specify(names="H300_hh_bbtautau", color=r.kBlue, nFilesMax=None) +
+                specify(names="ZZ_2l2q_100", weights=w2, color=r.kRed, nFilesMax=2) +
                 #specify(names="ZZ_2l2q", weights=w, color=r.kRed, nFilesMax=None) +
                 #specify(names="tt_bbll", weights=w, color=28, nFilesMax=None) +
                 []
