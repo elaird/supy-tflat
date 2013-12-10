@@ -27,14 +27,15 @@ class example(supy.analysis):
                 supy.steps.histos.multiplicity("pt1"),
                 supy.steps.filters.multiplicity("pt1", min=1),
 
-                #supy.steps.histos.value("svMass", 20, 0.0, 200.0),
-                #supy.steps.histos.value("svPt", 20, 0.0, 200.0),
-                supy.steps.histos.value("met", 20, 0.0, 200.0),
-
                 supy.steps.histos.mass("diTauP4", 20, 0.0, 200.0),
-                supy.steps.filters.mass("diTauP4", min=50.0, max=130.0),
+                #supy.steps.histos.pt("diTauP4", 20, 0.0, 200.0),
+                #supy.steps.filters.mass("diTauP4", min=50.0, max=130.0),
 
-                supy.steps.histos.pt("diTauP4", 20, 0.0, 200.0),
+                supy.steps.histos.mass("svP4", 20, 0.0, 200.0),
+                supy.steps.filters.mass("svP4", min=100.0, max=130.0),
+
+                #supy.steps.histos.multiplicity("met"),
+                supy.steps.histos.value("met0", 20, 0.0, 200.0),
 
                 #displayer.displayer(),
                 ]
@@ -49,6 +50,8 @@ class example(supy.analysis):
                 calculables.indexedVar(index=1, var="Js_CSVbtagSorted", key="CSVbtag"),
                 calculables.diJetP4(var="Js_CSVbtagSorted"),
                 calculables.diTauP4(index=0),
+                calculables.svP4(index=0),
+                calculables.one("met", index=0),
                 ]
         return out
 
@@ -59,16 +62,16 @@ class example(supy.analysis):
         h.add("H300_hh_bbtautau",
               #'["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/gg/analysis_signal.root"]',
               #'["/scratch/zmao/analysis.root"]',
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh-SUB-TT/")',
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh2-SUB-TT/")',
               xs=0.0159)
 
         h.add("ZZ_2l2q",
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/ZZ2-SUB-TT/")',
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/ZZ3-SUB-TT/")',
               xs=2.5)
 
         h.add("tt_bbll",
               #'["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/tt/analysis_tt.root"]',
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/tt-SUB-TT/")',
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/tt2-SUB-TT/")',
               xs=26.1975)
         return [h]
 
@@ -78,7 +81,7 @@ class example(supy.analysis):
 
         w = calculables.LastBinOverFirstBin(dir="TT", histoName="results")
 
-        nFilesMax = 20
+        nFilesMax = None
         return (specify(names="H300_hh_bbtautau", color=r.kBlue, weights=w, nFilesMax=nFilesMax) +
                 specify(names="ZZ_2l2q", color=r.kRed, weights=w, nFilesMax=nFilesMax) +
                 specify(names="tt_bbll", color=28, weights=w, nFilesMax=nFilesMax) +
@@ -111,4 +114,17 @@ class example(supy.analysis):
                      pegMinimum=0.1,
                      showStatBox=False,
                      latexYieldTable=False,
+
+
+                     samplesForRatios=("H300_hh_bbtautau", "tt_bbll"),
+                     sampleLabelsForRatios=("hh", "tt"),
+                     foms=[{"value": lambda x, y: x/y,
+                            "uncRel": lambda x, y, xUnc, yUnc: ((xUnc/x)**2 + (yUnc/y)**2)**0.5,
+                            "label": lambda x, y:"%s/%s" % (x, y),
+                            },
+                           # #{"value": lambda x,y: x/(y**0.5),
+                           # # "uncRel": lambda x, y, xUnc, yUnc: math.sqrt((xUnc/x)**2 + (yUnc/y/2.)**2),
+                           # # "label": lambda x,y: "%s/sqrt(%s)" % (x, y),
+                           # # },
+                           ],
                      ).plotAll()
