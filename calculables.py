@@ -113,3 +113,25 @@ class diTauP4(supy.wrappedChain.calculable):
             coords = [self.source["%s%d" % (s, 1+i)].at(self.index) for s in ["pt", "eta", "phi", "m"]]
             self.lvs[i].SetCoordinates(*tuple(coords))
         self.value = self.lvs[0] + self.lvs[1]
+
+
+class svP4(supy.wrappedChain.calculable):
+    def __init__(self, index=None):
+        self.index = index
+        self.value = supy.utils.LorentzV()
+
+    def update(self, _):
+        self.value.SetCoordinates(0.0, 0.0, 0.0, self.source["svMass"].at(self.index))
+
+
+class one(supy.wrappedChain.calculable):
+    @property
+    def name(self):
+        return "%s%d" % (self.var, self.index)
+
+    def __init__(self, var="", index=None):
+        self.var = var
+        self.index = index
+
+    def update(self, _):
+        self.value = self.source[self.var].at(self.index)
