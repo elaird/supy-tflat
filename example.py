@@ -1,5 +1,6 @@
 import supy
 import displayer
+import steps
 import calculables
 import ROOT as r
 
@@ -11,6 +12,12 @@ class example(supy.analysis):
                 #supy.steps.filters.multiplicity("genTauPt", min=2, max=2),
                 #supy.steps.histos.multiplicity("genBPt"),
                 #supy.steps.filters.multiplicity("genBPt", min=2, max=2),
+
+                steps.tauLegsPtEta(ptMin=30.0, absEtaMax=2.3, index=0),
+                steps.tauLegsPtEta(ptMin=30.0, absEtaMax=2.1, index=0),
+                steps.tauLegsPtEta(ptMin=35.0, absEtaMax=2.1, index=0),
+                steps.tauLegsPtEta(ptMin=40.0, absEtaMax=2.1, index=0),
+                steps.tauLegsPtEta(ptMin=45.0, absEtaMax=2.1, index=0),
 
                 supy.steps.histos.multiplicity("Js_CSVbtagSorted"),
                 supy.steps.filters.multiplicity("Js_CSVbtagSorted", min=2),
@@ -44,7 +51,7 @@ class example(supy.analysis):
     def listOfCalculables(self, pars):
         out = supy.calculables.zeroArgs(supy.calculables)
         #out += supy.calculables.zeroArgs(calculables)
-        out += [calculables.jets(var="J", nBranches=4, ptMin=20.0, absEtaMax=2.4,
+        out += [calculables.jets(var="J", nBranches=4, ptMin=30.0, absEtaMax=2.4,
                                  keys=["CSVbtag"], sortBy="CSVbtag", reverse=True),
                 calculables.indexedVar(index=0, var="Js_CSVbtagSorted", key="CSVbtag"),
                 calculables.indexedVar(index=1, var="Js_CSVbtagSorted", key="CSVbtag"),
@@ -111,7 +118,7 @@ class example(supy.analysis):
                      rowColors=[r.kBlack, r.kViolet+4],
 
                      doLog=True,
-                     pegMinimum=0.1,
+                     pegMinimum=0.01,
                      showStatBox=False,
                      latexYieldTable=False,
 
