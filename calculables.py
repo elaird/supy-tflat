@@ -1,7 +1,7 @@
 import supy
 import ROOT as r
 
-class LastBinOverFirstBin(supy.wrappedChain.calculable):
+class LastBinOverFirstBin(supy.calculables.secondary):
     @property
     def name(self):
         return "LastBinOverBin%d" % self.firstBin
