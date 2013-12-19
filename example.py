@@ -15,12 +15,23 @@ class example(supy.analysis):
 
                 steps.tauLegsPtEta(ptMin=30.0, absEtaMax=2.3, index=0),
                 steps.tauLegsPtEta(ptMin=30.0, absEtaMax=2.1, index=0),
+
+                #supy.steps.histos.value("pt1_0", 20, 0.0, 100.0),
+                #supy.steps.histos.value("pt2_0", 20, 0.0, 100.0),
+                supy.steps.histos.value("minimumPt", 20, 0.0, 100.0),
+                #supy.steps.histos.value("maximumPt", 20, 0.0, 100.0),
+                #supy.steps.histos.value("differencePt", 20, -50.0, 50.0),
+
                 steps.tauLegsPtEta(ptMin=35.0, absEtaMax=2.1, index=0),
                 steps.tauLegsPtEta(ptMin=40.0, absEtaMax=2.1, index=0),
                 steps.tauLegsPtEta(ptMin=45.0, absEtaMax=2.1, index=0),
 
                 supy.steps.histos.multiplicity("Js_CSVbtagSorted"),
                 supy.steps.filters.multiplicity("Js_CSVbtagSorted", min=2),
+
+                supy.steps.histos.value("maximumJetPt", 20, 0.0, 100.0),  # ntuple max of 4 to be fixed
+                supy.steps.filters.value("maximumJetPt", min=50.0),
+
 
                 supy.steps.histos.value("Js_CSVbtagSorted_CSVbtag0", 20, 0.0, 1.0),
                 supy.steps.filters.value("Js_CSVbtagSorted_CSVbtag0", min=0.679),
@@ -42,7 +53,7 @@ class example(supy.analysis):
                 supy.steps.filters.mass("svP4", min=100.0, max=130.0),
 
                 #supy.steps.histos.multiplicity("met"),
-                supy.steps.histos.value("met0", 20, 0.0, 200.0),
+                supy.steps.histos.value("met_0", 20, 0.0, 200.0),
 
                 #displayer.displayer(),
                 ]
@@ -53,12 +64,18 @@ class example(supy.analysis):
         #out += supy.calculables.zeroArgs(calculables)
         out += [calculables.jets(var="J", nBranches=4, ptMin=30.0, absEtaMax=2.4,
                                  keys=["CSVbtag"], sortBy="CSVbtag", reverse=True),
+                calculables.maximumJetPt(jets="Js_CSVbtagSorted"),
                 calculables.indexedVar(index=0, var="Js_CSVbtagSorted", key="CSVbtag"),
                 calculables.indexedVar(index=1, var="Js_CSVbtagSorted", key="CSVbtag"),
                 calculables.diJetP4(var="Js_CSVbtagSorted"),
                 calculables.diTauP4(index=0),
                 calculables.svP4(index=0),
                 calculables.one("met", index=0),
+                calculables.one("pt1", index=0),
+                calculables.one("pt2", index=0),
+                calculables.maximumPt(index=0),
+                calculables.minimumPt(index=0),
+                calculables.differencePt(index=0),
                 ]
         return out
 
