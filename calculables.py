@@ -80,6 +80,15 @@ class jets(supy.wrappedChain.calculable):
             self.value = sorted(self.value, key=lambda x:x[self.sortBy], reverse=self.reverse)
 
 
+class maximumJetPt(supy.wrappedChain.calculable):
+    def __init__(self, jets=""):
+        self.jets = jets
+
+    def update(self, _):
+        pts = [jet["p4"].pt() for jet in self.source[self.jets]]
+        self.value = max(pts) if pts else None
+
+
 class indexedVar(supy.wrappedChain.calculable):
     @property
     def name(self):
@@ -127,7 +136,7 @@ class svP4(supy.wrappedChain.calculable):
 class one(supy.wrappedChain.calculable):
     @property
     def name(self):
-        return "%s%d" % (self.var, self.index)
+        return "%s_%d" % (self.var, self.index)
 
     def __init__(self, var="", index=None):
         self.var = var
@@ -135,3 +144,33 @@ class one(supy.wrappedChain.calculable):
 
     def update(self, _):
         self.value = self.source[self.var].at(self.index)
+
+
+class maximumPt(supy.wrappedChain.calculable):
+    def __init__(self, index=None):
+        self.index = index
+
+    def update(self, _):
+        pt1 = self.source["pt1"].at(self.index)
+        pt2 = self.source["pt2"].at(self.index)
+        self.value = max([pt1, pt2])
+
+
+class minimumPt(supy.wrappedChain.calculable):
+    def __init__(self, index=None):
+        self.index = index
+
+    def update(self, _):
+        pt1 = self.source["pt1"].at(self.index)
+        pt2 = self.source["pt2"].at(self.index)
+        self.value = min([pt1, pt2])
+
+
+class differencePt(supy.wrappedChain.calculable):
+    def __init__(self, index=None):
+        self.index = index
+
+    def update(self, _):
+        pt1 = self.source["pt1"].at(self.index)
+        pt2 = self.source["pt2"].at(self.index)
+        self.value = pt1 - pt2
