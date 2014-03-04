@@ -133,6 +133,17 @@ class svP4(supy.wrappedChain.calculable):
         self.value.SetCoordinates(0.0, 0.0, 0.0, self.source["svMass"].at(self.index))
 
 
+class sumP4(supy.wrappedChain.calculable):
+    def __init__(self, vars=[]):
+        self.vars = vars
+        self.value = supy.utils.LorentzV()
+
+    def update(self, _):
+        self.value.SetCoordinates(0.0, 0.0, 0.0, 0.0)
+        for var in self.vars:
+            self.value += self.source[var]
+
+
 class one(supy.wrappedChain.calculable):
     @property
     def name(self):
