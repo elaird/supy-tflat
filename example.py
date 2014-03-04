@@ -55,6 +55,8 @@ class example(supy.analysis):
                 #supy.steps.histos.multiplicity("met"),
                 supy.steps.histos.value("met_0", 20, 0.0, 200.0),
 
+                supy.steps.histos.mass("sumP4", 20, 0.0, 400.0),
+
                 #displayer.displayer(),
                 ]
 
@@ -70,6 +72,7 @@ class example(supy.analysis):
                 calculables.diJetP4(var="Js_CSVbtagSorted"),
                 calculables.diTauP4(index=0),
                 calculables.svP4(index=0),
+                calculables.sumP4(vars=["diJetP4", "diTauP4"]),
                 calculables.one("met", index=0),
                 calculables.one("pt1", index=0),
                 calculables.one("pt2", index=0),
@@ -86,16 +89,30 @@ class example(supy.analysis):
         h.add("H300_hh_bbtautau",
               #'["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/gg/analysis_signal.root"]',
               #'["/scratch/zmao/analysis.root"]',
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh2-SUB-TT/")',
+              #'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh2-SUB-TT/", itemsToSkip=["/hdfs/store/user/zmao/H2hh2-SUB-TT//SUB-TT-patTuple_cfg-A42E9B15-7AFA-E211-99E7-0025901D493E.root", "/hdfs/store/user/zmao/H2hh2-SUB-TT//SUB-TT-patTuple_cfg-4EA452C7-78FA-E211-9E80-0025901D4844.root"])',
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh300-SUB-TT/")',
               xs=0.0159)
 
+        h.add("H350_hh_bbtautau",
+              #'utils.fileListFromDisk("/afs/hep.wisc.edu/home/elaird/CMSSW_5_3_7/src/UWAnalysis/analysis350.root", isDirectory=False)',
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh350-SUB-TT/")',
+              xs=0.0159)
+        print "fix xs 350"
+
+        h.add("H260_hh_bbtautau",
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh260-SUB-TT/")',
+              xs=0.0159)
+        print "fix xs 260"
+
         h.add("ZZ_2l2q",
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/ZZ3-SUB-TT/")',
+              #'utils.fileListFromDisk("/hdfs/store/user/zmao/ZZ3-SUB-TT/")',
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/ZZ5-SUB-TT/")',
               xs=2.5)
 
         h.add("tt_bbll",
               #'["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/tt/analysis_tt.root"]',
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/tt2-SUB-TT/")',
+              #'utils.fileListFromDisk("/hdfs/store/user/zmao/tt2-SUB-TT/")',
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/tt_new-SUB-TT/")',
               xs=26.1975)
         return [h]
 
@@ -106,9 +123,11 @@ class example(supy.analysis):
         w = calculables.LastBinOverFirstBin(dir="TT", histoName="results")
 
         nFilesMax = None
-        return (specify(names="H300_hh_bbtautau", color=r.kBlue, weights=w, nFilesMax=nFilesMax) +
-                specify(names="ZZ_2l2q", color=r.kRed, weights=w, nFilesMax=nFilesMax) +
-                specify(names="tt_bbll", color=28, weights=w, nFilesMax=nFilesMax) +
+        return (specify(names="H260_hh_bbtautau", color=r.kRed) + #weights=w, nFilesMax=nFilesMax) +
+                specify(names="H300_hh_bbtautau", color=r.kBlue) + #weights=w, nFilesMax=nFilesMax) +
+                specify(names="H350_hh_bbtautau", color=r.kCyan) + #weights=w, nFilesMax=nFilesMax) +
+                ##specify(names="ZZ_2l2q", color=r.kRed, weights=w, nFilesMax=nFilesMax) +
+                specify(names="tt_bbll", color=28) + #, weights=w, nFilesMax=nFilesMax) +
                 []
                 )
 
