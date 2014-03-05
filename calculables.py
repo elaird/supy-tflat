@@ -1,15 +1,79 @@
+import cPickle
 import supy
 import ROOT as r
 
-class LastBinOverFirstBin(supy.calculables.secondary):
+
+class LastBinOverBin(supy.calculables.secondary):
+    '''
+    When this step is run and the cache file does not exist, it will
+    (a) retrieve the necessary numbers from the TChain files;
+    (b) reject all events (preventing further processing);
+    (c) sum the numbers retrieved from the files in each slice;
+    (d) store them in a cache file.
+
+    When this step is run and the cache file does exist, it will compute
+    a ratio of histogram bin contents, and assign that to self.value.
+    '''
+
     @property
     def name(self):
-        return "LastBinOverBin%d" % self.firstBin
+        return "LastBinOverBin%d" % self.iBin
 
-    def __init__(self, dir="", histoName="", firstBin=1):
+    def __init__(self, dir="", histoName="", iBin=None):
         self.hPath = "%s/%s" % (dir, histoName)
-        self.firstBin = firstBin
-        self.value = None
+        assert type(iBin) is int
+        self.iBin = iBin
+        self.value = 1.0
+        self._continueProcessing = False
+        self._varNames = ["nFiles", "nEventsBinI", "nEventsLastBin"]
+
+    def checkCache(self, tag=None):
+        # disable warning inherited from supy.calculables.secondary
+        pass
+
+    def cacheFileName(self):
+        fileName = self.inputFileName[:-len(self.outputSuffix())]
+        fileName = "_".join(fileName.split("_")[:-2]) # remove nSlices_iSlice from name
+        return fileName + self.outputSuffix()
+
+    def select(self, _):
+        # if cache file has not been created, do not process event further
+        return self._continueProcessing
+
+    def update(self, _):
+        # self.value is computed in self.setup()
+        pass
+
+    def setup(self, chain, fileDir):
+        try:
+            d = cPickle.load(open(self.cacheFileName()))
+            assert d["nEventsBinI"]
+            self.value = d["nEventsLastBin"] / d["nEventsBinI"]
+            self._continueProcessing = True
+        except IOError, e:
+            assert e.errno == 2, e
+            print e
+            print "%s will reject all events and produce that file." % self.name
+
+            self.varsToPickle = lambda: self._varNames
+            elements = chain.GetListOfFiles()
+            self.nFiles = elements.GetEntries()
+            h = self.histo(elements)
+            self.nEventsBinI = h.GetBinContent(self.iBin)
+            self.nEventsLastBin = h.GetBinContent(h.GetNbinsX())
+
+    def mergeFunc(self, products):
+        d = {}
+        for key in self._varNames:
+            if key not in products:  # do not overwrite cache file
+                return
+            d[key] = sum(products[key])
+
+        cPickle.dump(d, open(self.outputFileName, "w"))
+        # NOTE: self.outputFileName (when not sliced) ==
+        #       self.cacheFileName (when sliced)
+        print "PAT-tuple skim-efficiency file %s\n" % self.outputFileName +\
+            " was created from %d input files." % d["nFiles"]
 
     def histo(self, elements):
         # http://root.cern.ch/root/html/TChain.html#TChain:AddFile
@@ -27,16 +91,6 @@ class LastBinOverFirstBin(supy.calculables.secondary):
                 out.SetDirectory(0)
             f.Close()
         return out
-
-    def update(self, _):
-        if self.value is not None:
-            return
-
-        h = self.histo(self.source["chain"].GetListOfFiles())
-        num = h.GetBinContent(h.GetNbinsX())
-        den = h.GetBinContent(self.firstBin)
-        assert den
-        self.value = num / den
 
 
 class jets(supy.wrappedChain.calculable):
