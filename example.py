@@ -8,6 +8,8 @@ class example(supy.analysis):
     
     def listOfSteps(self, pars):
         return [supy.steps.printer.progressPrinter(),
+                calculables.LastBinOverBin(dir="TT", histoName="results", iBin=1),
+
                 #supy.steps.histos.multiplicity("genTauPt"),
                 #supy.steps.filters.multiplicity("genTauPt", min=2, max=2),
                 #supy.steps.histos.multiplicity("genBPt"),
@@ -120,14 +122,15 @@ class example(supy.analysis):
     def listOfSamples(self, pars):
         from supy.samples import specify
 
-        w = calculables.LastBinOverFirstBin(dir="TT", histoName="results")
+        kargs = {"weights": ['LastBinOverBin1'],
+                 "nFilesMax": 3,
+                 }
 
-        nFilesMax = None
-        return (specify(names="H260_hh_bbtautau", color=r.kRed) + #weights=w, nFilesMax=nFilesMax) +
-                specify(names="H300_hh_bbtautau", color=r.kBlue) + #weights=w, nFilesMax=nFilesMax) +
-                specify(names="H350_hh_bbtautau", color=r.kCyan) + #weights=w, nFilesMax=nFilesMax) +
-                ##specify(names="ZZ_2l2q", color=r.kRed, weights=w, nFilesMax=nFilesMax) +
-                specify(names="tt_bbll", color=28) + #, weights=w, nFilesMax=nFilesMax) +
+        return (specify(names="H260_hh_bbtautau", color=r.kRed, **kargs) +
+                #specify(names="H300_hh_bbtautau", color=r.kBlue, **kargs) +
+                #specify(names="H350_hh_bbtautau", color=r.kCyan, **kargs) +
+                ##specify(names="ZZ_2l2q", color=r.kRed, **kargs) +
+                #specify(names="tt_bbll", color=28, **kargs) +
                 []
                 )
 
