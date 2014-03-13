@@ -87,33 +87,25 @@ class example(supy.analysis):
 
     def listOfSampleDictionaries(self):
         h = supy.samples.SampleHolder()
+
         # xs in pb
         h.add("H300_hh_bbtautau",
-              #'["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/gg/analysis_signal.root"]',
-              #'["/scratch/zmao/analysis.root"]',
-              #'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh2-SUB-TT/", itemsToSkip=["/hdfs/store/user/zmao/H2hh2-SUB-TT//SUB-TT-patTuple_cfg-A42E9B15-7AFA-E211-99E7-0025901D493E.root", "/hdfs/store/user/zmao/H2hh2-SUB-TT//SUB-TT-patTuple_cfg-4EA452C7-78FA-E211-9E80-0025901D4844.root"])',
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh300-SUB-TT/")',
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh300_new-SUB-TT/")',
               xs=0.0159)
 
         h.add("H350_hh_bbtautau",
-              #'utils.fileListFromDisk("/afs/hep.wisc.edu/home/elaird/CMSSW_5_3_7/src/UWAnalysis/analysis350.root", isDirectory=False)',
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh350-SUB-TT/")',
-              xs=0.0159)
-        print "fix xs 350"
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh350_new-SUB-TT/")',
+              xs=0.0159); print "fix xs 350"
 
         h.add("H260_hh_bbtautau",
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh260-SUB-TT/")',
-              xs=0.0159)
-        print "fix xs 260"
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/H2hh260_new3-SUB-TT/")',
+              xs=0.0159); print "fix xs 260"
 
         h.add("ZZ_2l2q",
-              #'utils.fileListFromDisk("/hdfs/store/user/zmao/ZZ3-SUB-TT/")',
-              'utils.fileListFromDisk("/hdfs/store/user/zmao/ZZ5-SUB-TT/")',
+              'utils.fileListFromDisk("/hdfs/store/user/zmao/ZZ_new-SUB-TT/")',
               xs=2.5)
 
         h.add("tt_bbll",
-              #'["/afs/hep.wisc.edu/home/zmao/CMSSW_5_3_7/src/UWAnalysis/CRAB/LTau/tt/analysis_tt.root"]',
-              #'utils.fileListFromDisk("/hdfs/store/user/zmao/tt2-SUB-TT/")',
               'utils.fileListFromDisk("/hdfs/store/user/zmao/tt_new-SUB-TT/")',
               xs=26.1975)
         return [h]
@@ -123,14 +115,14 @@ class example(supy.analysis):
         from supy.samples import specify
 
         kargs = {"weights": ['LastBinOverBin1'],
-                 "nFilesMax": 3,
+                 "nFilesMax": None,
                  }
 
         return (specify(names="H260_hh_bbtautau", color=r.kRed, **kargs) +
-                #specify(names="H300_hh_bbtautau", color=r.kBlue, **kargs) +
-                #specify(names="H350_hh_bbtautau", color=r.kCyan, **kargs) +
-                ##specify(names="ZZ_2l2q", color=r.kRed, **kargs) +
-                #specify(names="tt_bbll", color=28, **kargs) +
+                specify(names="H300_hh_bbtautau", color=r.kBlue, **kargs) +
+                specify(names="H350_hh_bbtautau", color=r.kCyan, **kargs) +
+                specify(names="ZZ_2l2q", color=r.kRed, **kargs) +
+                specify(names="tt_bbll", color=28, **kargs) +
                 []
                 )
 
@@ -141,7 +133,9 @@ class example(supy.analysis):
         def gopts(name="", color=1):
             return {"name":name, "color":color, "markerStyle":1, "lineWidth":2, "goptions":"ehist"}
 
-        for sample, color in [("H300_hh_bbtautau", r.kBlue),
+        for sample, color in [("H260_hh_bbtautau", r.kOrange),
+                              ("H300_hh_bbtautau", r.kBlue),
+                              ("H350_hh_bbtautau", r.kCyan),
                               ("ZZ_2l2q", r.kRed),
                               ("tt_bbll", 28)]:
             org.mergeSamples(targetSpec=gopts(sample, color), sources=[sample+".LastBinOverBin1"])
