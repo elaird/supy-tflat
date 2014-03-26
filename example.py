@@ -16,7 +16,7 @@ class example(supy.analysis):
                 #supy.steps.filters.multiplicity("genBPt", min=2, max=2),
 
                 steps.tauLegsPtEta(ptMin=30.0, absEtaMax=2.3, index=0),
-                steps.tauLegsPtEta(ptMin=30.0, absEtaMax=2.1, index=0),
+                #steps.tauLegsPtEta(ptMin=30.0, absEtaMax=2.1, index=0),
 
                 #supy.steps.histos.value("pt1_0", 20, 0.0, 100.0),
                 #supy.steps.histos.value("pt2_0", 20, 0.0, 100.0),
@@ -24,9 +24,11 @@ class example(supy.analysis):
                 #supy.steps.histos.value("maximumPt", 20, 0.0, 100.0),
                 #supy.steps.histos.value("differencePt", 20, -50.0, 50.0),
 
-                steps.tauLegsPtEta(ptMin=35.0, absEtaMax=2.1, index=0),
-                steps.tauLegsPtEta(ptMin=40.0, absEtaMax=2.1, index=0),
+                #steps.tauLegsPtEta(ptMin=35.0, absEtaMax=2.1, index=0),
+                #steps.tauLegsPtEta(ptMin=40.0, absEtaMax=2.1, index=0),
                 steps.tauLegsPtEta(ptMin=45.0, absEtaMax=2.1, index=0),
+                supy.steps.histos.value("minimumPt", 20, 0.0, 100.0),
+                supy.steps.histos.value("diTauHadTriggerWeight", 20, 0.0, 2.0),
 
                 supy.steps.histos.multiplicity("Js_CSVbtagSorted"),
                 supy.steps.filters.multiplicity("Js_CSVbtagSorted", min=2),
@@ -81,6 +83,7 @@ class example(supy.analysis):
                 calculables.maximumPt(index=0),
                 calculables.minimumPt(index=0),
                 calculables.differencePt(index=0),
+                calculables.diTauHadTriggerWeight(tauPairIndex=0),
                 ]
         return out
 
