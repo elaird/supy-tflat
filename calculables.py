@@ -35,6 +35,9 @@ class LastBinOverBin(supy.calculables.secondary):
     def cacheFileName(self):
         fileName = self.inputFileName[:-len(self.outputSuffix())]
         fileName = "_".join(fileName.split("_")[:-2]) # remove nSlices_iSlice from name
+        if fileName.count("."):
+            print "FIXME: fileName hack"
+            fileName = fileName[:fileName.find(".")] # remove weights from name
         return fileName + self.outputSuffix()
 
     def select(self, _):
@@ -240,6 +243,16 @@ class differencePt(supy.wrappedChain.calculable):
         pt1 = self.source["pt1"].at(self.index)
         pt2 = self.source["pt2"].at(self.index)
         self.value = pt1 - pt2
+
+
+class sameSign(supy.wrappedChain.calculable):
+    def __init__(self, index=None):
+        self.index = index
+
+    def update(self, _):
+        c1 = self.source["charge1"].at(self.index)
+        c2 = self.source["charge2"].at(self.index)
+        self.value = c1 == c2
 
 
 class diTauHadTriggerWeight(supy.wrappedChain.calculable):
