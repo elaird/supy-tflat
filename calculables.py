@@ -32,13 +32,21 @@ class LastBinOverBin(supy.calculables.secondary):
         # disable warning inherited from supy.calculables.secondary
         pass
 
-    def cacheFileName(self):
-        fileName = self.inputFileName[:-len(self.outputSuffix())]
+    def deSliced(self, s):
+        fileName = s[:-len(self.outputSuffix())]
         fileName = "_".join(fileName.split("_")[:-2]) # remove nSlices_iSlice from name
+        return fileName + self.outputSuffix()
+
+    def deWeighted(self, s):
+        fileName = s[:-len(self.outputSuffix())]
         if fileName.count("."):
             print "FIXME: fileName hack"
             fileName = fileName[:fileName.find(".")] # remove weights from name
         return fileName + self.outputSuffix()
+
+    def cacheFileName(self):
+        fileName = self.deSliced(self.inputFileName)
+        return self.deWeighted(fileName)
 
     def select(self, _):
         # if cache file has not been created, do not process event further
@@ -73,7 +81,8 @@ class LastBinOverBin(supy.calculables.secondary):
                 return
             d[key] = sum(products[key])
 
-        cPickle.dump(d, open(self.outputFileName, "w"))
+        outputFileName = self.deWeighted(self.outputFileName)
+        cPickle.dump(d, open(outputFileName, "w"))
         # NOTE: self.outputFileName (when not sliced) ==
         #       self.cacheFileName (when sliced)
         print "PAT-tuple skim-efficiency file %s\n" % self.outputFileName +\
