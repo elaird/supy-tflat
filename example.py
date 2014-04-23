@@ -34,8 +34,8 @@ class example(supy.analysis):
                 steps.tauLegsPtEta(**pars["tauLegs"]),
 
                 supy.steps.filters.label("tauPlots"),
-                supy.steps.histos.value("pt1_0", 20, 0.0, 100.0),
-                supy.steps.histos.value("pt2_0", 20, 0.0, 100.0),
+                supy.steps.histos.value("pt1_0", 40, 0.0, 200.0),
+                supy.steps.histos.value("pt2_0", 40, 0.0, 200.0),
                 supy.steps.histos.value("eta1_0", 20, -3.0, 3.0),
                 supy.steps.histos.value("eta2_0", 20, -3.0, 3.0),
                 supy.steps.histos.value("iso1_0", 20, 0.0, 4.0),
@@ -62,7 +62,7 @@ class example(supy.analysis):
                 supy.steps.filters.value("Js_CSVbtagSorted_CSVbtag1", min=0.244),
 
                 supy.steps.filters.label("diJetMass"),
-                supy.steps.histos.mass("diJetP4", 20, 0.0, 200.0),
+                #supy.steps.histos.mass("diJetP4", 20, 0.0, 200.0),
                 supy.steps.histos.mass("diJetP4", 25, 0.0, 500.0),
                 supy.steps.filters.mass("diJetP4", min=100.0, max=140.0),
 
@@ -70,20 +70,21 @@ class example(supy.analysis):
                 supy.steps.histos.multiplicity("pt1"),
                 supy.steps.filters.multiplicity("pt1", min=1),
 
-                supy.steps.histos.mass("diTauP4", 20, 0.0, 200.0),
+                #supy.steps.histos.mass("diTauP4", 20, 0.0, 200.0),
                 supy.steps.histos.mass("diTauP4", 25, 0.0, 500.0),
                 #supy.steps.histos.pt("diTauP4", 20, 0.0, 200.0),
                 #supy.steps.filters.mass("diTauP4", min=50.0, max=130.0),
 
                 supy.steps.filters.label("diTauSvMass"),
-                supy.steps.histos.mass("svP4", 20, 0.0, 200.0),
+                #supy.steps.histos.mass("svP4", 20, 0.0, 200.0),
                 supy.steps.histos.mass("svP4", 25, 0.0, 500.0),
                 supy.steps.filters.mass("svP4", min=100.0, max=130.0),
 
                 #supy.steps.histos.multiplicity("met"),
                 #supy.steps.histos.value("met_0", 20, 0.0, 200.0),
 
-                supy.steps.histos.mass("sumP4", 20, 0.0, 400.0),
+                supy.steps.histos.mass("sumP4_diJetP4_diTauP4", 20, 0.0, 400.0),
+                supy.steps.histos.mass("sumP4_diJetP4_svP4", 20, 0.0, 400.0),
 
                 #displayer.displayer(),
                 ]
@@ -101,6 +102,7 @@ class example(supy.analysis):
                 calculables.diTauP4(index=0),
                 calculables.svP4(index=0),
                 calculables.sumP4(vars=["diJetP4", "diTauP4"]),
+                calculables.sumP4(vars=["diJetP4", "svP4"]),
                 calculables.one("met", index=0),
                 calculables.one("pt1", index=0),
                 calculables.one("pt2", index=0),
@@ -175,6 +177,7 @@ class example(supy.analysis):
             return {"name":name, "color":color, "markerStyle":1, "lineWidth":2, "goptions":"ehist"}
 
         org.mergeSamples(targetSpec={"name": "Data"}, allWithPrefix="data")
+
         weightString = ".".join(["", "LastBinOverBin1", "diTauHadTriggerWeight"])
         for sample, color in [("H260_hh_bbtautau", r.kOrange),
                               ("H300_hh_bbtautau", r.kBlue),
@@ -186,6 +189,11 @@ class example(supy.analysis):
                               ("w_ln_2j",   r.kMagenta+2,),
                               ]:
             org.mergeSamples(targetSpec=gopts(sample, color), sources=[sample + weightString])
+
+
+        org.mergeSamples(targetSpec=gopts("EWK", r.kRed),
+                         keepSources=True,
+                         sources=["ZZ_2l2q", "tt_bblnln", "tt_bblnqq", "dy_ll", "w_ln_2j"])
 
         org.scale()  # to data
         #org.scale(20.0e3) # /pb
@@ -203,15 +211,15 @@ class example(supy.analysis):
                      showStatBox=False,
                      latexYieldTable=False,
 
-                     samplesForRatios=("H300_hh_bbtautau", "tt_bbll"),
-                     sampleLabelsForRatios=("hh", "tt"),
-                     foms=[{"value": lambda x, y: x/y,
-                            "uncRel": lambda x, y, xUnc, yUnc: ((xUnc/x)**2 + (yUnc/y)**2)**0.5,
-                            "label": lambda x, y:"%s/%s" % (x, y),
-                            },
-                           #{"value": lambda x,y: x/(y**0.5),
-                           # "uncRel": lambda x, y, xUnc, yUnc: math.sqrt((xUnc/x)**2 + (yUnc/y/2.)**2),
-                           # "label": lambda x,y: "%s/sqrt(%s)" % (x, y),
-                           # },
-                           ],
+                     #samplesForRatios=("H300_hh_bbtautau", "tt_bbll"),
+                     #sampleLabelsForRatios=("hh", "tt"),
+                     #foms=[{"value": lambda x, y: x/y,
+                     #       "uncRel": lambda x, y, xUnc, yUnc: ((xUnc/x)**2 + (yUnc/y)**2)**0.5,
+                     #       "label": lambda x, y:"%s/%s" % (x, y),
+                     #       },
+                     #      #{"value": lambda x,y: x/(y**0.5),
+                     #      # "uncRel": lambda x, y, xUnc, yUnc: math.sqrt((xUnc/x)**2 + (yUnc/y/2.)**2),
+                     #      # "label": lambda x,y: "%s/sqrt(%s)" % (x, y),
+                     #      # },
+                     #      ],
                      ).plotAll()
