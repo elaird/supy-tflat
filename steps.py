@@ -6,6 +6,7 @@ class osIsoMin(supy.analysisStep):
         assert type(index) is int, index
         for item in ["index", "isoMin"]:
             setattr(self, item, eval(item))
+        self.moreName = "%g GeV < max(iso1, iso2) when pair %d is OS" % (self.isoMin, self.index)
 
     def select(self, eventVars):
         isos = [eventVars["iso1"].at(self.index),
