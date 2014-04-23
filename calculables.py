@@ -201,8 +201,13 @@ class svP4(supy.wrappedChain.calculable):
 
 
 class sumP4(supy.wrappedChain.calculable):
+    @property
+    def name(self):
+        return self._name
+
     def __init__(self, vars=[]):
         self.vars = vars
+        self._name = "_".join(["sumP4"] + self.vars)
         self.value = supy.utils.LorentzV()
 
     def update(self, _):
@@ -281,7 +286,6 @@ class diTauHadTriggerWeight(supy.wrappedChain.calculable):
     """
 
     def __init__(self, fitStart=25, hltThreshold=35, data=True, tauPairIndex=None):
-        print "FIXME: improve name!"
         self.tauPairIndex = tauPairIndex
         self.fitStart = fitStart
         assert hltThreshold == 35
@@ -309,7 +313,12 @@ class diTauHadTriggerWeight(supy.wrappedChain.calculable):
 
         self.le14 = le14_da if data else le14_mc
         self.ge16 = ge16_da if data else ge16_mc
-
+        self.moreName = ", ".join(["fitStart=%d" % self.fitStart,
+                                   "hltThreshold=%d" % hltThreshold,
+                                   "data" if data else "MC",
+                                   "index=%d" % self.tauPairIndex,
+                                   ])
+        self.moreName = "(%s)" % self.moreName
 
     def params(self, eta=None):
         if abs(eta) < 1.4:
