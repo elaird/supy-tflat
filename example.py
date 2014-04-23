@@ -12,7 +12,7 @@ class example(supy.analysis):
                 "tauLegs": {"ptMin": 45.0,
                             "absEtaMax": 2.1,
                             "index": 0,
-                            "isoMax":2.0,
+                            "isoMax": 1.5,
                             },
                 "ss": self.vary(dict([("os", {"max": 0.5}),
                                       ("ss", {"min": 0.5}),
@@ -32,6 +32,8 @@ class example(supy.analysis):
 
                 supy.steps.histos.value("minimumPt", 40, 0.0, 200.0),
                 steps.tauLegsPtEta(**pars["tauLegs"]),
+                supy.steps.histos.multiplicity("pt1"),
+                supy.steps.filters.multiplicity("pt1", min=1),
 
                 supy.steps.filters.label("tauPlots"),
                 supy.steps.histos.value("pt1_0", 40, 0.0, 200.0),
@@ -64,27 +66,24 @@ class example(supy.analysis):
                 supy.steps.filters.label("diJetMass"),
                 #supy.steps.histos.mass("diJetP4", 20, 0.0, 200.0),
                 supy.steps.histos.mass("diJetP4", 25, 0.0, 500.0),
-                supy.steps.filters.mass("diJetP4", min=100.0, max=140.0),
+                supy.steps.filters.mass("diJetP4", min=100.0, max=150.0),
 
-                supy.steps.filters.label("diTauMass"),
-                supy.steps.histos.multiplicity("pt1"),
-                supy.steps.filters.multiplicity("pt1", min=1),
-
+                supy.steps.filters.label("diTauMasses"),
                 #supy.steps.histos.mass("diTauP4", 20, 0.0, 200.0),
                 supy.steps.histos.mass("diTauP4", 25, 0.0, 500.0),
                 #supy.steps.histos.pt("diTauP4", 20, 0.0, 200.0),
                 #supy.steps.filters.mass("diTauP4", min=50.0, max=130.0),
 
-                supy.steps.filters.label("diTauSvMass"),
+                #supy.steps.filters.label("diTauSvMass"),
                 #supy.steps.histos.mass("svP4", 20, 0.0, 200.0),
                 supy.steps.histos.mass("svP4", 25, 0.0, 500.0),
-                supy.steps.filters.mass("svP4", min=100.0, max=130.0),
+                supy.steps.filters.mass("svP4", min=100.0, max=150.0),
 
                 #supy.steps.histos.multiplicity("met"),
                 #supy.steps.histos.value("met_0", 20, 0.0, 200.0),
 
-                supy.steps.histos.mass("sumP4_diJetP4_diTauP4", 20, 0.0, 400.0),
-                supy.steps.histos.mass("sumP4_diJetP4_svP4", 20, 0.0, 400.0),
+                supy.steps.histos.mass("sumP4_diJetP4_diTauP4", 25, 0.0, 500.0),
+                supy.steps.histos.mass("sumP4_diJetP4_svP4", 25, 0.0, 500.0),
 
                 #displayer.displayer(),
                 ]
@@ -115,6 +114,7 @@ class example(supy.analysis):
                 calculables.sameSign(index=0),
                 calculables.differencePt(index=0),
                 calculables.diTauHadTriggerWeight(tauPairIndex=0),
+                supy.calculables.other.fixedValue(label="x100", value=100.0),
                 ]
         return out
 
@@ -123,14 +123,18 @@ class example(supy.analysis):
         h = supy.samples.SampleHolder()
         hdfs = 'utils.fileListFromDisk("/hdfs/store/user/%s/")'
 
+        #("tt_eff", "/hdfs/store/user/zmao/tt_new_noSign_relaxed3-SUB-TT"),
+        #("tt_semi_eff", "/hdfs/store/user/zmao/tt_SemiLep_noSign_relaxed6-SUB-TT"),
+        #('DYJetsToLL_eff', '/hdfs/store/user/zmao/DYJetsToLL_relaxed3-SUB-TT'),
+        #('W2JetsToLNu_eff', '/hdfs/store/user/zmao/W2JetsToLNu_relaxed3-SUB-TT/')
+
         # xs in pb
-        h.add("H300_hh_bbtautau", hdfs % 'zmao/H2hh300_new-SUB-TT', xs=0.0159)
-        h.add("H350_hh_bbtautau", hdfs % 'zmao/H2hh350_new-SUB-TT', xs=0.0159)
-        h.add("H260_hh_bbtautau", hdfs % 'zmao/H2hh260_new3-SUB-TT', xs=0.0159)
+        h.add("H260_hh_bbtautau", hdfs % 'zmao/H2hh260_noSign_relaxed6-SUB-TT', xs=0.0159)  # "ttTreeBeforeChargeCut"
+        h.add("H300_hh_bbtautau", hdfs % 'zmao/H2hh300_noSign_relaxed6-SUB-TT', xs=0.0159)  # "ttTreeFinal"
+        h.add("H350_hh_bbtautau", hdfs % 'zmao/H2hh350_noSign_relaxed6-SUB-TT', xs=0.0159)  # "ttTreeFinal"
         print "fix xs 260,350"
 
         h.add("ZZ_2l2q", hdfs % 'zmao/ZZ_noSign-SUB-TT', xs=2.5)
-        #h.add("tt_bbll", hdfs % 'zmao/tt_new-SUB-TT', xs=26.1975)
         h.add("tt_bblnln", hdfs % 'zmao/tt_new_moreGenInfo-SUB-TT', xs=26.1975)
         h.add("tt_bblnqq", hdfs % 'zmao/tt_SemiLep_noSign-SUB-TT', xs=109.281)
         h.add('dy_ll',     hdfs % 'zmao/DYJetsToLL-SUB-TT', xs=3504.)
@@ -148,20 +152,19 @@ class example(supy.analysis):
     def listOfSamples(self, pars):
         from supy.samples import specify
         n = None
-        kMc = {"weights": ['LastBinOverBin1', 'diTauHadTriggerWeight'],
-               "nFilesMax": n,
-               }
+        mc = ['LastBinOverBin1', 'diTauHadTriggerWeight']
+        sig = mc + ['x100']
 
-        return (#specify(names="H260_hh_bbtautau", color=r.kRed, **kMc) +
-                #specify(names="H300_hh_bbtautau", color=r.kBlue, **kMc) +
-                #specify(names="H350_hh_bbtautau", color=r.kCyan, **kMc) +
+        return (specify(names="H260_hh_bbtautau", color=r.kRed,  nFilesMax=n, weights=sig) +
+                #specify(names="H300_hh_bbtautau", color=r.kBlue, nFilesMax=n, weights=sig) +
+                #specify(names="H350_hh_bbtautau", color=r.kCyan, nFilesMax=n, weights=sig) +
 
-                specify(names="ZZ_2l2q",   color=r.kYellow,    **kMc) +
-                specify(names="tt_bblnln", color=r.kMagenta,   **kMc) +
-                specify(names="tt_bblnqq", color=r.kBlue,      **kMc) +
-                specify(names="dy_ll",     color=r.kGreen,     **kMc) +
-                specify(names="w_ln_2j",   color=r.kMagenta+2, **kMc) +
-                
+                specify(names="ZZ_2l2q",   color=r.kYellow,    nFilesMax=n, weights=mc) +
+                specify(names="tt_bblnln", color=r.kMagenta,   nFilesMax=n, weights=mc) +
+                specify(names="tt_bblnqq", color=r.kBlue,      nFilesMax=n, weights=mc) +
+                specify(names="dy_ll",     color=r.kGreen,     nFilesMax=n, weights=mc) +
+                specify(names="w_ln_2j",   color=r.kMagenta+2, nFilesMax=n, weights=mc) +
+
                 specify(names="dataA", nFilesMax=n) +
                 specify(names="dataB", nFilesMax=n) +
                 specify(names="dataC", nFilesMax=n) +
@@ -178,17 +181,21 @@ class example(supy.analysis):
 
         org.mergeSamples(targetSpec={"name": "Data"}, allWithPrefix="data")
 
-        weightString = ".".join(["", "LastBinOverBin1", "diTauHadTriggerWeight"])
-        for sample, color in [("H260_hh_bbtautau", r.kOrange),
-                              ("H300_hh_bbtautau", r.kBlue),
-                              ("H350_hh_bbtautau", r.kCyan),
-                              ("ZZ_2l2q",   r.kYellow,   ),
-                              ("tt_bblnln", r.kMagenta,  ),
-                              ("tt_bblnqq", r.kBlue,     ),
-                              ("dy_ll",     r.kGreen,    ),
-                              ("w_ln_2j",   r.kMagenta+2,),
-                              ]:
-            org.mergeSamples(targetSpec=gopts(sample, color), sources=[sample + weightString])
+        mc = ".".join(["", "LastBinOverBin1", "diTauHadTriggerWeight"])
+        sig = mc + ".x100"
+        for sample, color, ws in [("H260_hh_bbtautau", r.kOrange,    sig),
+                                  ("H300_hh_bbtautau", 28,           sig),
+                                  ("H350_hh_bbtautau", 44,           sig),
+                                  ("ZZ_2l2q",          r.kYellow,    mc),
+                                  ("tt_bblnln",        r.kMagenta,   mc),
+                                  ("tt_bblnqq",        r.kBlue,      mc),
+                                  ("dy_ll",            r.kGreen,     mc),
+                                  ("w_ln_2j",          r.kMagenta+2, mc),
+                                  ]:
+            name = sample
+            if ws.endswith(".x100"):
+                name = sample[:4] + ".x100"
+            org.mergeSamples(targetSpec=gopts(name, color), sources=[sample + ws])
 
 
         org.mergeSamples(targetSpec=gopts("EWK", r.kRed),
