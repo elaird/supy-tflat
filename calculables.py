@@ -71,6 +71,7 @@ class LastBinOverBin(supy.calculables.secondary):
             elements = chain.GetListOfFiles()
             self.nFiles = elements.GetEntries()
             h = self.histo(elements)
+            assert h
             self.nEventsBinI = h.GetBinContent(self.iBin)
             self.nEventsLastBin = h.GetBinContent(h.GetNbinsX())
 
