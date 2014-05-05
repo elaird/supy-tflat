@@ -23,7 +23,8 @@ class example(supy.analysis):
 
     def listOfSteps(self, pars):
         return [supy.steps.printer.progressPrinter(),
-                calculables.LastBinOverBin(dir="TT", histoName="results", iBin=1).onlySim(),
+                #calculables.LastBinOverBin(dir="TT", histoName="results", iBin=1).onlySim(),
+                calculables.LastBinOverBin(dir="/", histoName="preselection", iBin=1).onlySim(),
 
                 #supy.steps.histos.multiplicity("genTauPt"),
                 #supy.steps.filters.multiplicity("genTauPt", min=2, max=2),
@@ -123,22 +124,35 @@ class example(supy.analysis):
         h = supy.samples.SampleHolder()
         hdfs = 'utils.fileListFromDisk("/hdfs/store/user/%s/")'
         # xs in pb
-        h.add("H260_hh_bbtautau", hdfs % 'zmao/H2hh260_noSign_relaxed7-SUB-TT', xs=0.0159)
-        h.add("H300_hh_bbtautau", hdfs % 'zmao/H2hh300_noSign_relaxed7-SUB-TT', xs=0.0159)
-        h.add("H350_hh_bbtautau", hdfs % 'zmao/H2hh350_noSign_relaxed7-SUB-TT', xs=0.0159)
+        #h.add("H260_hh_bbtautau", hdfs % 'zmao/H2hh260_noSign_relaxed7-SUB-TT', xs=0.0159)
+        #h.add("H300_hh_bbtautau", hdfs % 'zmao/H2hh300_noSign_relaxed7-SUB-TT', xs=0.0159)
+        #h.add("H350_hh_bbtautau", hdfs % 'zmao/H2hh350_noSign_relaxed7-SUB-TT', xs=0.0159)
         print "fix xs 260,350"
 
-        h.add("ZZ_llqq",   hdfs % 'zmao/ZZ_noSign_relaxed4-SUB-TT',         xs=2.5)
-        h.add("tt_bblnln", hdfs % 'zmao/tt_new_noSign_relaxed3-SUB-TT',     xs=26.1975)
-        h.add("tt_bblnqq", hdfs % 'zmao/tt_SemiLep_noSign_relaxed6-SUB-TT', xs=109.281)
-        h.add('dy_ll',     hdfs % 'zmao/DYJetsToLL_relaxed3-SUB-TT',        xs=3504.)
-        h.add('w_ln_2j',   hdfs % 'zmao/W2JetsToLNu_relaxed3-SUB-TT',       xs=1750.)
+        #h.add("ZZ_llqq",   hdfs % 'zmao/ZZ_noSign_relaxed4-SUB-TT',         xs=2.5)
+        #h.add("tt_bblnln", hdfs % 'zmao/tt_new_noSign_relaxed3-SUB-TT',     xs=26.1975)
+        #h.add("tt_bblnqq", hdfs % 'zmao/tt_SemiLep_noSign_relaxed6-SUB-TT', xs=109.281)
+        #h.add('dy_ll',     hdfs % 'zmao/DYJetsToLL_relaxed3-SUB-TT',        xs=3504.)
+        #h.add('w_ln_2j',   hdfs % 'zmao/W2JetsToLNu_relaxed3-SUB-TT',       xs=1750.)
 
-        h.add('dataA', hdfs % 'zmao/Tau_Run2012A_relaxed3-SUB-TT-data',        lumi=1.0e3)
-        h.add('dataB', hdfs % 'zmao/TauParked_Run2012B_relaxed3-SUB-TT-data/', lumi=6.0e3)
-        h.add('dataC', hdfs % 'zmao/TauParked_Run2012C_relaxed3-SUB-TT-data/', lumi=6.0e3)
-        h.add('dataD', hdfs % 'zmao/TauParked_Run2012D_relaxed3-SUB-TT-data/', lumi=6.0e3)
+        #h.add('dataA', hdfs % 'zmao/Tau_Run2012A_relaxed3-SUB-TT-data',        lumi=1.0e3)
+        #h.add('dataB', hdfs % 'zmao/TauParked_Run2012B_relaxed3-SUB-TT-data/', lumi=6.0e3)
+        #h.add('dataC', hdfs % 'zmao/TauParked_Run2012C_relaxed3-SUB-TT-data/', lumi=6.0e3)
+        #h.add('dataD', hdfs % 'zmao/TauParked_Run2012D_relaxed3-SUB-TT-data/', lumi=6.0e3)
         print "fix lumi ABCD"
+
+        zd = 'utils.fileListFromDisk("/scratch/zmao/relaxed_new/%s_all.root", isDirectory=False)'
+        h.add("H260_hh_bbtautau", zd % 'H2hh260', xs=0.0159)
+        h.add("H300_hh_bbtautau", zd % 'H2hh300', xs=0.0159)
+        h.add("H350_hh_bbtautau", zd % 'H2hh350', xs=0.0159)
+        h.add("ZZ_llqq",   zd % 'ZZ_eff',  xs=2.5)
+        h.add("tt_bblnln", zd % 'tt_eff',  xs=26.1975)
+        h.add("tt_bblnqq", zd % 'tt_semi_eff',  xs=109.281)
+        h.add('dy_ll',     zd % 'DYJetsToLL_eff',  xs=3504.)
+        h.add('w_ln_1j',   zd % 'W1JetsToLNu_eff',  xs=5400.)
+        h.add('w_ln_2j',   zd % 'W2JetsToLNu_eff',  xs=1750.)
+        h.add('w_ln_3j',   zd % 'W3JetsToLNu_eff',  xs=519.)
+        h.add('Data',      zd % 'dataTotal', lumi=19.0e3)
 
         return [h]
 
@@ -157,12 +171,15 @@ class example(supy.analysis):
                 specify(names="tt_bblnln", color=r.kMagenta,   nFilesMax=n, weights=mc) +
                 specify(names="tt_bblnqq", color=r.kBlue,      nFilesMax=n, weights=mc) +
                 specify(names="dy_ll",     color=r.kGreen,     nFilesMax=n, weights=mc) +
+                specify(names="w_ln_1j",   color=r.kMagenta+2, nFilesMax=n, weights=mc) +
                 specify(names="w_ln_2j",   color=r.kMagenta+2, nFilesMax=n, weights=mc) +
+                specify(names="w_ln_3j",   color=r.kMagenta+2, nFilesMax=n, weights=mc) +
 
-                specify(names="dataA", nFilesMax=n) +
-                specify(names="dataB", nFilesMax=n) +
-                specify(names="dataC", nFilesMax=n) +
-                specify(names="dataD", nFilesMax=n) +
+                specify(names="Data", nFilesMax=n) +
+                #specify(names="dataA", nFilesMax=n) +
+                #specify(names="dataB", nFilesMax=n) +
+                #specify(names="dataC", nFilesMax=n) +
+                #specify(names="dataD", nFilesMax=n) +
                 []
                 )
 
@@ -184,17 +201,17 @@ class example(supy.analysis):
                                   ("tt_bblnln",        r.kMagenta,   mc),
                                   ("tt_bblnqq",        r.kBlue,      mc),
                                   ("dy_ll",            r.kGreen,     mc),
-                                  ("w_ln_2j",          r.kMagenta+2, mc),
                                   ]:
             name = sample
             if ws.endswith(".x100"):
                 name = sample[:4] + ".x100"
             org.mergeSamples(targetSpec=gopts(name, color), sources=[sample + ws])
 
+        org.mergeSamples(targetSpec=gopts("w_ln_123j", r.kMagenta+2), allWithPrefix="w_ln")
 
         org.mergeSamples(targetSpec=gopts("EWK", r.kRed),
                          keepSources=True,
-                         sources=["ZZ_llqq", "tt_bblnln", "tt_bblnqq", "dy_ll", "w_ln_2j"])
+                         sources=["ZZ_llqq", "tt_bblnln", "tt_bblnqq", "dy_ll", "w_ln_123j"])
 
         org.scale()  # to data
         #org.scale(lumiToUseInAbsenceOfData=20.0e3) # /pb
