@@ -1,4 +1,5 @@
 import cPickle
+import math
 import supy
 import ROOT as r
 
@@ -31,10 +32,21 @@ class LastBinOverBin(supy.calculables.secondary):
         # disable warning inherited from supy.calculables.secondary
         pass
 
-    def cacheFileName(self):
-        fileName = self.inputFileName[:-len(self.outputSuffix())]
+    def deSliced(self, s):
+        fileName = s[:-len(self.outputSuffix())]
         fileName = "_".join(fileName.split("_")[:-2]) # remove nSlices_iSlice from name
         return fileName + self.outputSuffix()
+
+    def deWeighted(self, s):
+        fileName = s[:-len(self.outputSuffix())]
+        if fileName.count("."):
+            print "FIXME: fileName hack"
+            fileName = fileName[:fileName.find(".")] # remove weights from name
+        return fileName + self.outputSuffix()
+
+    def cacheFileName(self):
+        fileName = self.deSliced(self.inputFileName)
+        return self.deWeighted(fileName)
 
     def select(self, _):
         # if cache file has not been created, do not process event further
@@ -59,6 +71,7 @@ class LastBinOverBin(supy.calculables.secondary):
             elements = chain.GetListOfFiles()
             self.nFiles = elements.GetEntries()
             h = self.histo(elements)
+            assert h
             self.nEventsBinI = h.GetBinContent(self.iBin)
             self.nEventsLastBin = h.GetBinContent(h.GetNbinsX())
 
@@ -69,7 +82,8 @@ class LastBinOverBin(supy.calculables.secondary):
                 return
             d[key] = sum(products[key])
 
-        cPickle.dump(d, open(self.outputFileName, "w"))
+        outputFileName = self.deWeighted(self.outputFileName)
+        cPickle.dump(d, open(outputFileName, "w"))
         # NOTE: self.outputFileName (when not sliced) ==
         #       self.cacheFileName (when sliced)
         print "PAT-tuple skim-efficiency file %s\n" % self.outputFileName +\
@@ -188,8 +202,13 @@ class svP4(supy.wrappedChain.calculable):
 
 
 class sumP4(supy.wrappedChain.calculable):
+    @property
+    def name(self):
+        return self._name
+
     def __init__(self, vars=[]):
         self.vars = vars
+        self._name = "_".join(["sumP4"] + self.vars)
         self.value = supy.utils.LorentzV()
 
     def update(self, _):
@@ -239,3 +258,90 @@ class differencePt(supy.wrappedChain.calculable):
         pt1 = self.source["pt1"].at(self.index)
         pt2 = self.source["pt2"].at(self.index)
         self.value = pt1 - pt2
+
+
+class sameSign(supy.wrappedChain.calculable):
+    def __init__(self, index=None):
+        self.index = index
+
+    def update(self, _):
+        c1 = self.source["charge1"].at(self.index)
+        c2 = self.source["charge2"].at(self.index)
+        self.value = c1 == c2
+
+
+class diTauHadTriggerWeight(supy.wrappedChain.calculable):
+    """
+    See AN 13-189, appendix A
+    -------------------------
+            tag: HLT_IsoMu24_eta2p1
+          probe: HLT_IsoMu18_eta2p1_MediumIsoPFTau25_Trk1_eta2p1
+                 also req. HLT: 25 --> 35
+                 also req.  L1: tau-jet w/ 44uc < pT; abs(eta) < 2.1
+                                         (~30c tau pT)
+                                OR
+                                cen-jet w/ 64uc < pT; abs(eta) < 3.0
+                                         (~44c tau pT)
+     applied to: HLT_DoubleMediumIsoPFTau35_Trk{1,5}_eta2p1_v*
+                 (L1: two tau-jet as above OR two cen/tau-jet as above)
+    """
+
+    def __init__(self, fitStart=25, hltThreshold=35, data=True, tauPairIndex=None):
+        self.tauPairIndex = tauPairIndex
+        self.fitStart = fitStart
+        assert hltThreshold == 35
+        #    fitStart: (epsil,   x0, sigma),
+        le14_da = {20: (0.898, 44.3, 1.02),
+                   25: (0.866, 43.1, 0.86),
+                   30: (0.839, 42.3, 0.73),
+                   35: (0.846, 42.4, 0.78),
+                   }
+        le14_mc = {20: (0.837, 43.6, 1.09),
+                   25: (0.832, 40.4, 0.80),
+                   30: (0.829, 40.4, 0.74),
+                   35: (0.833, 40.1, 0.86),
+                   }
+        ge16_da = {20: (0.81, 43.6, 1.09),
+                   25: (0.76, 41.8, 0.86),
+                   30: (0.74, 41.2, 0.75),
+                   35: (0.74, 41.2, 0.79),
+                   }
+        ge16_mc = {20: (0.70, 39.7, 0.95),
+                   25: (0.69, 38.6, 0.74),
+                   30: (0.69, 38.7, 0.61),
+                   35: (0.69, 38.8, 0.61),
+                   }
+
+        self.le14 = le14_da if data else le14_mc
+        self.ge16 = ge16_da if data else ge16_mc
+        self.moreName = ", ".join(["fitStart=%d" % self.fitStart,
+                                   "hltThreshold=%d" % hltThreshold,
+                                   "data" if data else "MC",
+                                   "index=%d" % self.tauPairIndex,
+                                   ])
+        self.moreName = "(%s)" % self.moreName
+
+    def params(self, eta=None):
+        if abs(eta) < 1.4:
+            d = self.le14
+        elif 1.6 < abs(eta):
+            d = self.ge16
+        else:
+            #assert False, abs(eta)
+            d = self.ge16
+        return d[self.fitStart]
+
+    def Phi(self, e=None, x=None, x0=None, sigma=None):
+        #y = r.TMath.Erf((x-x0)/sigma/math.sqrt(2.0))  # AN Eq. 5
+        y = r.TMath.Erf((x-x0)/2.0/sigma/math.sqrt(x))  # https://github.com/rmanzoni/HTT/blob/master/CMGTools/H2TauTau/interface/TriggerEfficiency.h
+        return (1+y)*e/2.0
+
+    def effOneLeg(self, eta=None, pt=None):
+        e, x0, sigma = self.params(eta)
+        return self.Phi(e=e, x=pt, x0=x0, sigma=sigma)
+
+    def update(self, _):
+        self.value = 1.0
+        for i in range(1, 3):
+            self.value *= self.effOneLeg(eta=self.source["eta%d" % i].at(self.tauPairIndex),
+                                         pt=self.source["pt%d" % i].at(self.tauPairIndex))

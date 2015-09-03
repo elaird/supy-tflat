@@ -3,7 +3,9 @@ import supy
 
 
 def mainTree():
-    return ("ttTreeFinal", "eventTree")
+    #return ("ttTreeFinal", "eventTree")
+    #return ("ttTreeBeforeChargeCut", "eventTree")
+    return ("/", "eventTree")
 
 
 def useCachedFileLists():
