@@ -3,17 +3,16 @@ import supy
 
 
 def mainTree():
-    #return ("ttTreeFinal", "eventTree")
-    #return ("ttTreeBeforeChargeCut", "eventTree")
-    return ("/", "eventTree")
-
+    return ("/", "Ntuple")
 
 def useCachedFileLists():
     return False
 
+def leavesToBlackList():
+    return ["weight"]
 
 def LorentzVectorType():
-    return ('PtEtaPhiM4D', 'double')
+    return ('PtEtaPhiM4D', 'float')
 
 
 def experiment():
