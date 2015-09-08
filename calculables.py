@@ -272,26 +272,26 @@ class measured_tau_leptons(supy.wrappedChain.calculable):
         m_pion = 0.13957
 
         self.value = r.std.vector('svFitStandalone::MeasuredTauLepton')()
-        for pdgId, pt, eta, phi, mass, dm in [(abs(s["t1PdgId"]), s["rv1"].pt(), s["rv1"].eta(), s["rv1"].phi(), s["rv1"].mass(), int(s["t1DecayMode"])),
-                                              (abs(s["t2PdgId"]), s["rv2"].pt(), s["rv2"].eta(), s["rv2"].phi(), s["rv2"].mass(), int(s["t2DecayMode"])),
-                                              ]:
-            if pdgId == 11:
-                lep = ml(r.svFitStandalone.kTauToElecDecay, pt, eta, phi, m_elec)
-            elif pdgId == 13:
-                lep = ml(r.svFitStandalone.kTauToMuDecay, pt, eta, phi, m_muon)
-            elif pdgId == 15:
-                lep = ml(r.svFitStandalone.kTauToHadDecay, pt, eta, phi, mass if dm else m_pion, dm)
-            else:
-                continue  # requires filter later
-            self.value.push_back(lep)
+
+        if "mPt" in s:
+            self.value.push_back(ml(r.svFitStandalone.kTauToMuDecay, s["mPt"], s["mEta"], s["mPhi"], m_muon))
+        if "ePt" in s:
+            self.value.push_back(ml(r.svFitStandalone.kTauToElecDecay, s["ePt"], s["eEta"], s["ePhi"], m_elec))
+
+        # hadronic taus
+        for p in ["t1", "t2", "t"]:
+            if ("%sPt" % p) not in s:
+                continue
+            dm = int(s["%sDecayMode" % p])
+            m = s["%sMass" % p] if dm else m_pion
+            self.value.push_back(ml(r.svFitStandalone.kTauToHadDecay, s["%sPt" % p], s["%sEta" % p], s["%sPhi" % p], m, dm))
 
 
 class has_hadronic_taus(supy.wrappedChain.calculable):
     def update(self, _):
+        bad = [None, 5, 6]
         s = self.source
-        one = abs(s["t1PdgId"]) == 15 and s["t1DecayMode"] != 5 and s["t1DecayMode"] != 6
-        two = abs(s["t2PdgId"]) == 15 and s["t2DecayMode"] != 5 and s["t2DecayMode"] != 6
-        self.value = one or two
+        self.value = (s.get("t1DecayMode") not in bad) and (s.get("t2DecayMode") not in bad)
 
 
 class svfitter(supy.wrappedChain.calculable):
