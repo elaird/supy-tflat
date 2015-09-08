@@ -49,7 +49,8 @@ class look(supy.analysis):
                 sshv(("genMetEt", "pfMetEt"), (100, 100), (0.0, 0.0), (mMax, mMax), xtitle="gen met (GeV);pf met (GeV)"),
                 sshv(("nus_pt", "pfMetEt"), (100, 100), (0.0, 0.0), (mMax, mMax), xtitle="(sum nu) pT (GeV);pf met (GeV)"),
 
-                ss.other.touchstuff(["nSelected"]),
+                # ss.other.touchstuff(["nSelected"]),
+                ss.filters.multiplicity("measured_tau_leptons", min=2, max=2),
                 ss.other.touchstuff(["pfmetsvfitter"]),
                 # ss.other.touchstuff(["pfmetsvs"]),
 
@@ -91,6 +92,8 @@ class look(supy.analysis):
                 calculables.rho_xy("pfmet"),
                 calculables.gaus(("genmet", "pfmet")),
                 calculables.gaus(("nus", "pfmet")),
+                calculables.measured_tau_leptons(),
+                calculables.has_hadronic_taus(),
                 calculables.svfitter(met="pfmet"),
                 calculables.svs(met="pfmet"),
                 ]
