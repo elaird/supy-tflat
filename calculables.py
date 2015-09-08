@@ -1,3 +1,4 @@
+import os
 import supy
 import ROOT as r
 import taufit
@@ -256,38 +257,59 @@ class nSelected(supy.wrappedChain.calculable):
         print "nSelected =", self.value
 
 
-class svfitter(supy.wrappedChain.calculable):
-    def __init__(self, met="", verbosity=2):
-        self.verbosity = verbosity
-        from DataFormats.FWLite import Events  # enable FWLite
-        self.svsa = r.SVfitStandaloneAlgorithm
-        self.fixes = (met, "")
+class measured_tau_leptons(supy.wrappedChain.calculable):
+    def __init__(self):
+        r.gSystem.Load("libTauAnalysisSVfitStandalone.so")
+        r.SVfitStandaloneAlgorithm  # hack
 
     def update(self, _):
         s = self.source
         met = self.fixes[0]
         ml = r.svFitStandalone.MeasuredTauLepton
 
-        # fixme
-        ch1 = ch2 = r.svFitStandalone.kTauToHadDecay
-        hasHadronicTaus = True
+        m_elec = 0.51100e-3
+        m_muon = 0.10566
+        m_pion = 0.13957
 
-        if ch1 == ch2 == r.svFitStandalone.kTauToHadDecay:
-            m1 = s["rv1"].mass()
-            m2 = s["rv2"].mass()
-            print "pass also decay mode"
-        else:
-            assert False, "fix masses etc."
+        self.value = r.std.vector('svFitStandalone::MeasuredTauLepton')()
+        for pdgId, pt, eta, phi, mass, dm in [(abs(s["t1PdgId"]), s["rv1"].pt(), s["rv1"].eta(), s["rv1"].phi(), s["rv1"].mass(), int(s["t1DecayMode"])),
+                                              (abs(s["t2PdgId"]), s["rv2"].pt(), s["rv2"].eta(), s["rv2"].phi(), s["rv2"].mass(), int(s["t2DecayMode"])),
+                                              ]:
+            if pdgId == 11:
+                lep = ml(r.svFitStandalone.kTauToElecDecay, pt, eta, phi, m_elec)
+            elif pdgId == 13:
+                lep = ml(r.svFitStandalone.kTauToMuDecay, pt, eta, phi, m_muon)
+            elif pdgId == 15:
+                lep = ml(r.svFitStandalone.kTauToHadDecay, pt, eta, phi, mass if dm else m_pion, dm)
+            else:
+                continue  # requires filter later
+            self.value.push_back(lep)
 
-        leps = r.std.vector('svFitStandalone::MeasuredTauLepton')()
-        leps.push_back(ml(ch1, s["rv1"].pt(), s["rv1"].eta(), s["rv1"].phi(), m1))
-        leps.push_back(ml(ch2, s["rv2"].pt(), s["rv2"].eta(), s["rv2"].phi(), m2))
-        self.value = self.svsa(leps, s[met].px(), s[met].py(), s["%scov" % met], self.verbosity)
+
+class has_hadronic_taus(supy.wrappedChain.calculable):
+    def update(self, _):
+        s = self.source
+        one = abs(s["t1PdgId"]) == 15 and s["t1DecayMode"] != 5 and s["t1DecayMode"] != 6
+        two = abs(s["t2PdgId"]) == 15 and s["t2DecayMode"] != 5 and s["t2DecayMode"] != 6
+        self.value = one or two
+
+
+class svfitter(supy.wrappedChain.calculable):
+    def __init__(self, met="", verbosity=2):
+        self.verbosity = verbosity
+        self.fixes = (met, "")
+
+    def update(self, _):
+        s = self.source
+        met = self.fixes[0]
+        # note that relevant setup is done in measured_tau_leptons.__init__
+        self.value = r.SVfitStandaloneAlgorithm(s["measured_tau_leptons"], s[met].px(), s[met].py(), s["%scov" % met], self.verbosity)
 
 
 class svs(supy.wrappedChain.calculable):
     def __init__(self, met=""):
         self.fixes = (met, "")
+        self.resFileName = "%s/src/TauAnalysis/SVfitStandalone/data/svFitVisMassAndPtResolutionPDF.root" % os.environ["CMSSW_BASE"]
 
     def update(self, _):
         s = self.source
@@ -300,8 +322,7 @@ class svs(supy.wrappedChain.calculable):
         self.value["vg"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
         # vglm = sv.massLmax()
 
-        # visPtResolution = r.TFile("%s/src/TauAnalysis/SVfitStandalone/data/svFitVisMassAndPtResolutionPDF.root" % os.environ["CMSSW_BASE"])
-        # sv.shiftVisPt(hasHadronicTaus, visPtResolution)
+        # sv.shiftVisPt(s["has_hadronic_taus"], r.TFile(self.resFileName))
         sv.integrateMarkovChain()
         self.value["mc"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
         # mclm = sv.massLmax()
