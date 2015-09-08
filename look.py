@@ -102,7 +102,7 @@ class look(supy.analysis):
         # xs in pb
 
         if True:
-            v3 = 'utils.fileListFromDisk("/home/%s/v3/DY_all_SYNC_tt.root", pruneList=False, isDirectory=False)' % os.environ["USER"]
+            v3 = 'utils.fileListFromDisk("/home/elaird/v3/DY_all_SYNC_tt.root", pruneList=False, isDirectory=False)'
             h.add('dy_ll', v3, xs=3504.)
         else:
             zm = 'utils.fileListFromDisk("/user_data/zmao/13TeV_samples_25ns/%s_inclusive.root", pruneList=False, isDirectory=False)'
