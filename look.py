@@ -9,7 +9,7 @@ import os
 ss = supy.steps
 sshv = ss.histos.value
 
-class look_13(supy.analysis):
+class look(supy.analysis):
     def parameters(self):
         return {"svs": ["mc", "vg", "pl"],
                 "tf": True,
@@ -102,7 +102,7 @@ class look_13(supy.analysis):
         # xs in pb
 
         if True:
-            v3 = 'utils.fileListFromDisk("%s/v3/DY_all_SYNC_tt.root", pruneList=False, isDirectory=False)' % os.environ["HOME"]
+            v3 = 'utils.fileListFromDisk("/home/%s/v3/DY_all_SYNC_tt.root", pruneList=False, isDirectory=False)' % os.environ["USER"]
             h.add('dy_ll', v3, xs=3504.)
         else:
             zm = 'utils.fileListFromDisk("/user_data/zmao/13TeV_samples_25ns/%s_inclusive.root", pruneList=False, isDirectory=False)'
