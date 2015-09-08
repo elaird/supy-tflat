@@ -289,7 +289,7 @@ class measured_tau_leptons(supy.wrappedChain.calculable):
 
 class has_hadronic_taus(supy.wrappedChain.calculable):
     def update(self, _):
-        bad = [None, 5, 6]
+        bad = [None, 5, 6]  # FIXME (floats)
         s = self.source
         self.value = (s.get("t1DecayMode") not in bad) and (s.get("t2DecayMode") not in bad)
 
