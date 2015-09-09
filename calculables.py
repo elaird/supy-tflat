@@ -24,7 +24,11 @@ class gt1(supy.wrappedChain.calculable):
         self.value = supy.utils.LorentzV()
     def update(self, _):
         s = self.source
-        self.value.SetCoordinates(s["t1GenPt"], s["t1GenEta"], s["t1GenPhi"], s["t1GenMass"])
+
+        for p in ["mGenTau", "eGenTau", "t1Gen"]:
+            if "%sPt" % p in s:
+                break
+        self.value.SetCoordinates(s["%sPt" % p], s["%sEta" % p], s["%sPhi" % p], s["%sMass" % p])
 
 
 class gt2(supy.wrappedChain.calculable):
@@ -33,7 +37,12 @@ class gt2(supy.wrappedChain.calculable):
         self.value = supy.utils.LorentzV()
     def update(self, _):
         s = self.source
-        self.value.SetCoordinates(s["t2GenPt"], s["t2GenEta"], s["t2GenPhi"], s["t2GenMass"])
+
+        for p in ["t2Gen", "tGen", "eGenTau"]:
+            if "%sPt" % p in s:
+                break
+
+        self.value.SetCoordinates(s["%sPt" % p], s["%sEta" % p], s["%sPhi" % p], s["%sMass" % p])
 
 
 class gn1(supy.wrappedChain.calculable):
@@ -62,21 +71,30 @@ class gtMass(supy.wrappedChain.calculable):
 
 
 class gv1(supy.wrappedChain.calculable):
-    """gen nu 1"""
+    """gen vis 1"""
     def __init__(self):
         self.value = supy.utils.LorentzV()
     def update(self, _):
         s = self.source
-        self.value.SetCoordinates(s["t1GenVisPt"], s["t1GenVisEta"], s["t1GenVisPhi"], s["t1GenVisMass"])
+
+        for p in ["mGen", "eGen", "t1GenVis"]:
+            if "%sPt" % p in s:
+                break
+        self.value.SetCoordinates(s["%sPt" % p], s["%sEta" % p], s["%sPhi" % p], s["%sMass" % p])
 
 
 class gv2(supy.wrappedChain.calculable):
-    """gen nu 2"""
+    """gen vis 2"""
     def __init__(self):
         self.value = supy.utils.LorentzV()
     def update(self, _):
         s = self.source
-        self.value.SetCoordinates(s["t2GenVisPt"], s["t2GenVisEta"], s["t2GenVisPhi"], s["t2GenVisMass"])
+
+        for p in ["t2GenVis", "tGenVis", "eGen"]:
+            if "%sPt" % p in s:
+                break
+
+        self.value.SetCoordinates(s["%sPt" % p], s["%sEta" % p], s["%sPhi" % p], s["%sMass" % p])
 
 
 class gvMass(supy.wrappedChain.calculable):
@@ -92,7 +110,11 @@ class rv1(supy.wrappedChain.calculable):
         self.value = supy.utils.LorentzV()
     def update(self, _):
         s = self.source
-        self.value.SetCoordinates(s["t1Pt"], s["t1Eta"], s["t1Phi"], s["t1Mass"])
+
+        for p in ["m", "e", "t1"]:
+            if "%sPt" % p in s:
+                break
+        self.value.SetCoordinates(s["%sPt" % p], s["%sEta" % p], s["%sPhi" % p], s["%sMass" % p])
 
 
 class rv2(supy.wrappedChain.calculable):
@@ -101,7 +123,12 @@ class rv2(supy.wrappedChain.calculable):
         self.value = supy.utils.LorentzV()
     def update(self, _):
         s = self.source
-        self.value.SetCoordinates(s["t2Pt"], s["t2Eta"], s["t2Phi"], s["t2Mass"])
+
+        for p in ["t2", "t", "e"]:
+            if "%sPt" % p in s:
+                break
+
+        self.value.SetCoordinates(s["%sPt" % p], s["%sEta" % p], s["%sPhi" % p], s["%sMass" % p])
 
 
 class rvMass(supy.wrappedChain.calculable):
