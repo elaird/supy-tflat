@@ -18,10 +18,14 @@ class look(supy.analysis):
     def listOfSteps(self, pars):
         mMax = 500.0
         return [ss.printer.progressPrinter(),
-                sshv("t1ByCombinedIsolationDeltaBetaCorrRaw3Hits", 100, 0.0, 10.0, xtitle="isolation (GeV)"),
-                sshv("t2ByCombinedIsolationDeltaBetaCorrRaw3Hits", 100, 0.0, 10.0, xtitle="isolation (GeV)"),
-                ss.filters.value("t1GenMass", min=0.0),
-                ss.filters.value("t2GenMass", min=0.0),
+                # sshv("t1ByCombinedIsolationDeltaBetaCorrRaw3Hits", 100, 0.0, 10.0, xtitle="isolation (GeV)"),
+                # sshv("t2ByCombinedIsolationDeltaBetaCorrRaw3Hits", 100, 0.0, 10.0, xtitle="isolation (GeV)"),
+                # ss.filters.value("t1GenMass", min=0.0),
+                # ss.filters.value("t2GenMass", min=0.0),
+                ss.histos.pt("rv1", 100, 0.0, 100.0, xtitle="reco vis 1 p_{T}"),
+                ss.histos.pt("rv2", 100, 0.0, 100.0, xtitle="reco vis 2 p_{T}"),
+                # ss.filters.pt("rv1", min=35.0),
+                # ss.filters.pt("rv2", min=35.0),
                 ss.filters.value("DR1", max=0.4),
                 ss.filters.value("DR2", max=0.4),
                 sshv("CDT1", 150, -1.0, 2.0, xtitle="cos(#Delta#theta_{1})"),
@@ -109,14 +113,20 @@ class look(supy.analysis):
             h.add('dy_ll', v3, xs=3504.)
         else:
             zm = 'utils.fileListFromDisk("/user_data/zmao/13TeV_samples_25ns/%s_inclusive.root", pruneList=False, isDirectory=False)'
-            h.add('dy_ll', zm % 'DY_all_ZTT_SYNC_tt', xs=3504.)
+            h.add('dy_tt', zm % 'DY_all_ZTT_SYNC_tt', xs=3504.)
+            h.add('dy_mt', zm % 'DY_all_ZTT_SYNC_mt', xs=3504.)
+            h.add('dy_et', zm % 'DY_all_ZTT_SYNC_et', xs=3504.)
+            h.add('dy_em', zm % 'DY_all_ZTT_SYNC_em', xs=3504.)
         return [h]
 
 
     def listOfSamples(self, pars):
         from supy.samples import specify
-        n = None
-        return (specify(names="dy_ll", nFilesMax=n) +
+        n = 1000
+        return (specify(names="dy_tt", nEventsMax=n) +
+                specify(names="dy_mt", nEventsMax=n) +
+                specify(names="dy_et", nEventsMax=n) +
+                specify(names="dy_em", nEventsMax=n) +
                 []
                 )
 
@@ -127,7 +137,10 @@ class look(supy.analysis):
         def gopts(name="", color=1):
             return {"name": name, "color": color, "markerStyle": 1, "lineWidth": 2, "goptions": "ehist"}
 
-        for new, old, color in [("DY->ll", "dy_ll", r.kBlue),
+        for new, old, color in [("DY->tt", "dy_tt", r.kBlue),
+                                ("DY->mt", "dy_mt", r.kRed),
+                                ("DY->et", "dy_et", r.kOrange + 3),
+                                ("DY->em", "dy_em", r.kGreen),
                                 ]:
             org.mergeSamples(targetSpec=gopts(new, color), sources=[old])
 
