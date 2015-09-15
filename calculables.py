@@ -334,26 +334,40 @@ class svfitter(supy.wrappedChain.calculable):
 
 
 class svs(supy.wrappedChain.calculable):
-    def __init__(self, met=""):
+    def __init__(self, met="", vg=False, mc=False, pl=False):
         self.fixes = (met, "")
         self.resFileName = "%s/src/TauAnalysis/SVfitStandalone/data/svFitVisMassAndPtResolutionPDF.root" % os.environ["CMSSW_BASE"]
+        self.vg = vg
+        self.mc = mc
+        self.pl = pl
 
     def update(self, _):
         s = self.source
-        self.value = {"mc_dm_leaf": (s["t1_t2_SVfit"].M(), None, None)}
+        self.value = {}
 
         sv = s["%ssvfitter" % self.fixes[0]]
         sv.addLogM(False)
 
-        sv.integrateVEGAS()  # NOTE! shiftVisPt crashes vegas
-        self.value["vg"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
-        # vglm = sv.massLmax()
+        if self.vg:
+            sv.integrateVEGAS()  # NOTE! shiftVisPt crashes vegas
+            self.value["vg"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
+            # vglm = sv.massLmax()
 
-        # sv.shiftVisPt(s["has_hadronic_taus"], r.TFile(self.resFileName))
-        sv.integrateMarkovChain()
-        self.value["mc"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
-        # mclm = sv.massLmax()
+        if self.mc:
+            # sv.shiftVisPt(s["has_hadronic_taus"], r.TFile(self.resFileName))
+            sv.integrateMarkovChain()
+            self.value["mc"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
+            # mclm = sv.massLmax()
 
-        sv.fit()
-        self.value["pl"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
+        if self.pl:
+            sv.fit()
+            self.value["pl"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
 
+
+class svMass(supy.wrappedChain.calculable):
+    def __init__(self, met="", sv=""):
+        self.fixes = (met, sv)
+
+    def update(self, _):
+        m, lo, hi = self.source["%ssvs" % self.fixes[0]][self.fixes[1]]
+        self.value = m
