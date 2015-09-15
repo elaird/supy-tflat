@@ -10,11 +10,12 @@ class svSkim(supy.analysis):
         return {"met": "pfmet",
                 "sv": ["mc"],
                 "svKeys": ["mass", "massUncert", "massLmax", "pt", "eta", "phi"],
+                "histoNames": ["eventWeights", "eventCountWeighted", "eventCount"],
                 }
 
     def listOfSteps(self, pars):
         met = pars["met"]
-        extraVars = []
+        extraVars = [h for h in pars["histoNames"]]
         for sv in pars["sv"]:
             for key in pars["svKeys"]:
                 extraVars.append("%s_sv%s_%s" % (met, sv, key))
@@ -39,11 +40,14 @@ class svSkim(supy.analysis):
             for key in pars["svKeys"]:
                 out += [calculables.sv.sv_access(met=met, sv=sv, key=key)]
 
+        for hName in pars["histoNames"]:
+            out.append(calculables.histo_bin1(hName))
+
         return out
 
 
     def listOfSampleDictionaries(self):
-        d = "/user_data/zmao/13TeV_samples_25ns"
+        d = "/user_data/zmao/13TeV_samples_25ns_Spring15_eletronID2"
 
         h = supy.samples.SampleHolder()
         zm = 'utils.fileListFromDisk("%s/%s_%s_inclusive.root", pruneList=False, isDirectory=False)'
