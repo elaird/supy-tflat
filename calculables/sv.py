@@ -60,6 +60,13 @@ class svs(supy.wrappedChain.calculable):
         self.mc = mc
         self.pl = pl
 
+    def store(self, key, sv):
+        self.value[key] = {}
+        for prefix in ["mass", "pt", "eta", "phi"]:
+            for suffix in ["", "Uncert", "Lmax"]:
+                f = prefix + suffix
+                self.value[key][f] = getattr(sv, f)()
+
     def update(self, _):
         s = self.source
         self.value = {}
@@ -69,24 +76,28 @@ class svs(supy.wrappedChain.calculable):
 
         if self.vg:
             sv.integrateVEGAS()  # NOTE! shiftVisPt crashes vegas
-            self.value["vg"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
-            # vglm = sv.massLmax()
+            self.store("vg", sv)
 
         if self.mc:
             # sv.shiftVisPt(s["has_hadronic_taus"], r.TFile(self.resFileName))
             sv.integrateMarkovChain()
-            self.value["mc"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
-            # mclm = sv.massLmax()
+            self.store("mc", sv)
 
         if self.pl:
             sv.fit()
-            self.value["pl"] = (sv.mass(), sv.mass() - sv.massUncert(), sv.mass() + sv.massUncert())
+            self.store("pl", sv)
 
 
-class svMass(supy.wrappedChain.calculable):
-    def __init__(self, met="", sv=""):
-        self.fixes = (met, sv)
+class sv_access(supy.wrappedChain.calculable):
+    @property
+    def name(self):
+        return "%s_sv%s_%s" % (self.met, self.sv, self.key)
+
+    def __init__(self, key="", met="", sv=""):
+        self.key = key
+        self.met = met
+        self.sv = sv
 
     def update(self, _):
-        m, lo, hi = self.source["%ssvs" % self.fixes[0]][self.fixes[1]]
-        self.value = m
+        d = self.source["%ssvs" % self.met][self.sv]
+        self.value = d[self.key]
