@@ -9,13 +9,15 @@ class svSkim(supy.analysis):
     def parameters(self):
         return {"met": "pfmet",
                 "sv": ["mc"],
+                "svKeys": ["mass", "massUncert", "massLmax", "pt", "eta", "phi"],
                 }
 
     def listOfSteps(self, pars):
         met = pars["met"]
         extraVars = []
         for sv in pars["sv"]:
-            extraVars.append("%ssvMass%s" % (met, sv))
+            for key in pars["svKeys"]:
+                extraVars.append("%s_sv%s_%s" % (met, sv, key))
 
         return [supy.steps.printer.progressPrinter(),
                 supy.steps.filters.multiplicity("measured_tau_leptons", min=2, max=2),
@@ -34,7 +36,8 @@ class svSkim(supy.analysis):
                 calculables.sv.svs(met=met, mc=("mc" in svl), vg=("vg" in svl), pl=("pl" in svl)),
                 ]
         for sv in svl:
-            out += [calculables.sv.svMass(met=met, sv=sv)]
+            for key in pars["svKeys"]:
+                out += [calculables.sv.sv_access(met=met, sv=sv, key=key)]
 
         return out
 
