@@ -1,6 +1,20 @@
 import supy
 import ROOT as r
-import taufit
+
+
+def tmatrix(met_cov, sym=False):
+    assert len(met_cov) == 2, met_cov
+    assert met_cov[0][1] == met_cov[1][0]
+    if sym:
+        out = r.TMatrixDSym(2)
+    else:
+        out = r.TMatrixD(2, 2)
+    for i in range(2):
+        assert len(met_cov[i]) == 2
+        for j in range(2):
+            # out[i][j] = met_cov[i][j]  # ROOT 5
+            out[i, j] = met_cov[i][j]
+    return out
 
 
 class nus(supy.wrappedChain.calculable):
@@ -241,7 +255,7 @@ class cov(supy.wrappedChain.calculable):
         met_cov = [(s["%sCovariance_00" % met], s["%sCovariance_01" % met]),
                    (s["%sCovariance_10" % met], s["%sCovariance_11" % met]),
                    ]
-        self.value = taufit.tmatrix(met_cov, sym=self.sym)
+        self.value = tmatrix(met_cov, sym=self.sym)
 
 
 class gaus(supy.wrappedChain.calculable):
