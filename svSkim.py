@@ -19,7 +19,7 @@ class svSkim(supy.analysis):
 
         return [supy.steps.printer.progressPrinter(),
                 supy.steps.filters.multiplicity("measured_tau_leptons", min=2, max=2),
-                supy.steps.other.skimmer(mainChain=True, extraVars=extraVars),
+                supy.steps.other.skimmer(mainChain=True, extraVars=extraVars, haddOutput=True),
                 ]
 
     def listOfCalculables(self, pars):
