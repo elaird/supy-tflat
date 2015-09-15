@@ -17,6 +17,38 @@ def tmatrix(met_cov, sym=False):
     return out
 
 
+class histo_bin1(supy.wrappedChain.calculable):
+    @property
+    def name(self):
+        return self.hName
+
+    def __init__(self, hName):
+        self.hName = hName
+        self.value = None
+
+    def update(self, _):
+        if self.value is None:
+            h = self.histo(self.source["chain"].GetListOfFiles())
+            self.value = h.GetBinContent(1)
+
+    def histo(self, elements):
+        # http://root.cern.ch/root/html/TChain.html#TChain:AddFile
+        out = None
+        for iElement in range(elements.GetEntries()):
+            element = elements.At(iElement)
+            f = r.TFile(element.GetTitle())
+            assert f
+            h = f.Get(self.hName)
+            assert h, "Histogram %s not found." % self.hName
+            if out:
+                out.Add(h)
+            else:
+                out = h.Clone()
+                out.SetDirectory(0)
+            f.Close()
+        return out
+
+
 class nus(supy.wrappedChain.calculable):
     """global (including neutrinos not from taus)"""
     def __init__(self):
