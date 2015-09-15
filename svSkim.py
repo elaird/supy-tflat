@@ -1,8 +1,8 @@
 import supy
-import configuration
 import calculables
 import calculables.sv
 import ROOT as r
+import plots_cfg
 
 
 class svSkim(supy.analysis):
@@ -40,31 +40,23 @@ class svSkim(supy.analysis):
 
 
     def listOfSampleDictionaries(self):
-        h = supy.samples.SampleHolder()
-        # xs in pb
+        d = "/user_data/zmao/13TeV_samples_25ns"
 
-        zm = 'utils.fileListFromDisk("/user_data/zmao/13TeV_samples_25ns/%s_inclusive.root", pruneList=False, isDirectory=False)'
-        h.add('dy_tt', zm % 'DY_all_ZTT_SYNC_tt', xs=3504.)
-        h.add('dy_mt', zm % 'DY_all_ZTT_SYNC_mt', xs=3504.)
-        h.add('dy_et', zm % 'DY_all_ZTT_SYNC_et', xs=3504.)
-        h.add('dy_em', zm % 'DY_all_ZTT_SYNC_em', xs=3504.)
-        h.add('m160_tt', zm % 'SUSY_all_SYNC_tt', xs=3504.)
-        h.add('m160_mt', zm % 'SUSY_all_SYNC_mt', xs=3504.)
-        h.add('m160_et', zm % 'SUSY_all_SYNC_et', xs=3504.)
-        h.add('m160_em', zm % 'SUSY_all_SYNC_em', xs=3504.)
+        h = supy.samples.SampleHolder()
+        zm = 'utils.fileListFromDisk("%s/%s_%s_inclusive.root", pruneList=False, isDirectory=False)'
+        for name, stem, _ in plots_cfg.dataCardSamplesList:
+            for dm in ["tt", "mt", "et", "em"]:
+                h.add("%s_%s" % (name, dm), zm % (d, stem.replace(plots_cfg.dir, ""), dm), xs=1.0)  # dummy XS
         return [h]
 
 
     def listOfSamples(self, pars):
+        test = False
+
         from supy.samples import specify
-        n = 2
-        return (# specify(names="dy_tt", nEventsMax=n) +
-                # specify(names="dy_mt", nEventsMax=n) +
-                # specify(names="dy_et", nEventsMax=n) +
-                specify(names="dy_em", nEventsMax=n) +
-                # specify(names="m160_tt", nEventsMax=n) +
-                # specify(names="m160_mt", nEventsMax=n) +
-                # specify(names="m160_et", nEventsMax=n) +
-                # specify(names="m160_em", nEventsMax=n) +
-                []
-                )
+        out = []
+        for name, _, _ in plots_cfg.dataCardSamplesList:
+            for dm in ["tt", "mt", "et", "em"]:
+                if test and name != "ZTT": continue
+                out += specify(names="%s_%s" % (name, dm), nEventsMax=(2 if test else None))
+        return tuple(out)
