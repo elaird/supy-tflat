@@ -20,9 +20,10 @@ def tmatrix(met_cov, sym=False):
 class histo_bin1(supy.wrappedChain.calculable):
     @property
     def name(self):
-        return self.hName
+        return self._name
 
-    def __init__(self, hName):
+    def __init__(self, hName, name):
+        self._name = name
         self.hName = hName
         self.value = None
 
