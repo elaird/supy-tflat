@@ -10,12 +10,12 @@ class svSkim(supy.analysis):
         return {"met": "pfmet",
                 "sv": ["mc"],
                 "svKeys": ["mass", "massUncert", "massLmax", "pt", "eta", "phi"],
-                "histoNames": ["eventWeights", "eventCountWeighted", "eventCount"],
+                "histoNames": {"eventCountWeighted": "initWeightedEvents", "eventCount": "initEvents"},
                 }
 
     def listOfSteps(self, pars):
         met = pars["met"]
-        extraVars = [h for h in pars["histoNames"]]
+        extraVars = sorted(pars["histoNames"].values())
         for sv in pars["sv"]:
             for key in pars["svKeys"]:
                 extraVars.append("%s_sv%s_%s" % (met, sv, key))
@@ -40,8 +40,8 @@ class svSkim(supy.analysis):
             for key in pars["svKeys"]:
                 out += [calculables.sv.sv_access(met=met, sv=sv, key=key)]
 
-        for hName in pars["histoNames"]:
-            out.append(calculables.histo_bin1(hName))
+        for hName, leafName in pars["histoNames"].iteritems():
+            out.append(calculables.histo_bin1(hName, leafName))
 
         return out
 
@@ -58,7 +58,7 @@ class svSkim(supy.analysis):
 
 
     def listOfSamples(self, pars):
-        test = False
+        test = True
 
         from supy.samples import specify
         out = []
