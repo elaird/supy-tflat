@@ -8,6 +8,9 @@ def mainTree():
 def useCachedFileLists():
     return False
 
+def computeEntriesAtMakeFileList():
+    return True
+
 def leavesToBlackList():
     return ["weight"]
 
