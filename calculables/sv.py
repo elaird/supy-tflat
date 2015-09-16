@@ -60,12 +60,15 @@ class svs(supy.wrappedChain.calculable):
         self.mc = mc
         self.pl = pl
 
-    def store(self, key, sv):
-        self.value[key] = {}
+        self.attrs = [] # ["cpuTime", "realTime"]
         for prefix in ["mass", "pt", "eta", "phi"]:
             for suffix in ["", "Uncert", "Lmax"]:
-                f = prefix + suffix
-                self.value[key][f] = getattr(sv, f)()
+                self.attrs.append(prefix + suffix)
+
+    def store(self, key, sv):
+        self.value[key] = {}
+        for f in self.attrs:
+            self.value[key][f] = getattr(sv, f)()
 
     def update(self, _):
         s = self.source
