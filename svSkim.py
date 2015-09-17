@@ -6,6 +6,8 @@ import plots_cfg
 
 
 class svSkim(supy.analysis):
+    channels = ["tt", "mt", "et", "em"]
+
     def parameters(self):
         return {"met": "pfmet",
                 "sv": ["mc"],
@@ -52,18 +54,18 @@ class svSkim(supy.analysis):
         h = supy.samples.SampleHolder()
         zm = 'utils.fileListFromDisk("%s/%s_%s_inclusive.root", pruneList=False, isDirectory=False)'
         for name, stem, _ in plots_cfg.dataCardSamplesList:
-            for dm in ["tt", "mt", "et", "em"]:
+            for dm in self.channels:
                 h.add("%s_%s" % (name, dm), zm % (d, stem.replace(plots_cfg.dir, ""), dm), xs=1.0)  # dummy XS
         return [h]
 
 
     def listOfSamples(self, pars):
-        test = True
+        test = False
 
         from supy.samples import specify
         out = []
         for name, _, _ in plots_cfg.dataCardSamplesList:
-            for dm in ["tt", "mt", "et", "em"]:
+            for dm in self.channels:
                 if test and name != "ZTT": continue
                 out += specify(names="%s_%s" % (name, dm), nEventsMax=(2 if test else None))
         return tuple(out)
