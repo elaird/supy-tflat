@@ -49,7 +49,7 @@ class svSkim(supy.analysis):
 
 
     def listOfSampleDictionaries(self):
-        d = "/user_data/zmao/13TeV_samples_25ns_Spring15_eletronID2"
+        d = "/user_data/elaird/13TeV_samples_25ns_Spring15_eletronID2"
 
         h = supy.samples.SampleHolder()
         zm = 'utils.fileListFromDisk("%s/%s_%s_inclusive.root", pruneList=False, isDirectory=False)'
