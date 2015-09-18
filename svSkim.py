@@ -53,7 +53,7 @@ class svSkim(supy.analysis):
 
         h = supy.samples.SampleHolder()
         zm = 'utils.fileListFromDisk("%s/%s_%s_inclusive.root", pruneList=False, isDirectory=False)'
-        for name, stem, _ in plots_cfg.dataCardSamplesList:
+        for name, stem, _ in plots_cfg.sampleList:
             for dm in self.channels:
                 h.add("%s_%s" % (name, dm), zm % (d, stem.replace(plots_cfg.dir, ""), dm), xs=1.0)  # dummy XS
         return [h]
@@ -61,11 +61,9 @@ class svSkim(supy.analysis):
 
     def listOfSamples(self, pars):
         test = False
-
-        from supy.samples import specify
         out = []
-        for name, _, _ in plots_cfg.dataCardSamplesList:
+        for name, _, _ in plots_cfg.sampleList:
             for dm in self.channels:
                 if test and name != "ZTT": continue
-                out += specify(names="%s_%s" % (name, dm), nEventsMax=(2 if test else None))
+                out += supy.samples.specify(names="%s_%s" % (name, dm), nEventsMax=(2 if test else None))
         return tuple(out)
