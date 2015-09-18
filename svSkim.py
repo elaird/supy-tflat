@@ -6,7 +6,7 @@ import plots_cfg
 
 
 class svSkim(supy.analysis):
-    channels = ["tt", "mt", "et", "em"]
+    suffix = "inclusive"
 
     def parameters(self):
         return {"met": "pfmet",
@@ -24,7 +24,7 @@ class svSkim(supy.analysis):
 
         return [supy.steps.printer.progressPrinter(),
                 supy.steps.filters.multiplicity("measured_tau_leptons", min=2, max=2),
-                supy.steps.other.skimmer(mainChain=True, extraVars=extraVars, haddOutput=True),
+                supy.steps.other.skimmer(mainChain=True, extraVars=extraVars, haddOutput=True, suffix=self.suffix),
                 ]
 
     def listOfCalculables(self, pars):
@@ -50,20 +50,22 @@ class svSkim(supy.analysis):
 
     def listOfSampleDictionaries(self):
         d = "/user_data/elaird/13TeV_samples_25ns_Spring15_eletronID2"
+        cmd = 'utils.fileListFromDisk("%s/%s_%s.root", pruneList=False, isDirectory=False)' % (d, "%s", self.suffix)
 
         h = supy.samples.SampleHolder()
-        zm = 'utils.fileListFromDisk("%s/%s_%s_inclusive.root", pruneList=False, isDirectory=False)'
-        for name, stem, _ in plots_cfg.sampleList:
-            for dm in self.channels:
-                h.add("%s_%s" % (name, dm), zm % (d, stem.replace(plots_cfg.dir, ""), dm), xs=1.0)  # dummy XS
+        for t in plots_cfg.sampleList:
+            for dm in ["tt", "mt", "et", "em"]:
+                name = "%s%s" % (t[1].replace(plots_cfg.dir, ""), dm)
+                name = "".join(name.split("/"))  # remove slashes
+                h.add(name, cmd % name, xs=1.0)  # dummy XS
         return [h]
 
 
     def listOfSamples(self, pars):
         test = False
         out = []
-        for name, _, _ in plots_cfg.sampleList:
-            for dm in self.channels:
-                if test and name != "ZTT": continue
-                out += supy.samples.specify(names="%s_%s" % (name, dm), nEventsMax=(2 if test else None))
+        for name in sorted(self.listOfSampleDictionaries()[0].keys()):
+            if test and not name.startswith("DY_all_ZTT"):
+                continue
+            out += supy.samples.specify(names=name, nEventsMax=(2 if test else None))
         return tuple(out)
