@@ -1,20 +1,16 @@
 import supy
+import configuration
 import displayer
 import steps
 import calculables
+import calculables.sv
 import ROOT as r
-import os
 
 
 ss = supy.steps
 sshv = ss.histos.value
 
 class look(supy.analysis):
-    def parameters(self):
-        return {"svs": ["mc", "vg", "pl"],
-                "tf": True,
-                }
-
     def listOfSteps(self, pars):
         mMax = 500.0
         return [ss.printer.progressPrinter(),
@@ -34,8 +30,8 @@ class look(supy.analysis):
                 sshv("DR2", 100, 0.0, 10.0, xtitle="#DeltaR_{2} (gen,reco)"),
                 sshv("gDPhi12", 20, -r.TMath.Pi(), r.TMath.Pi(), xtitle="gen. taus' #Delta#phi"),
                 sshv("rDPhi12", 20, -r.TMath.Pi(), r.TMath.Pi(), xtitle="reco. taus' #Delta#phi"),
-                sshv("gv1_gt1", 100, 0.0, 3.0, xtitle="gen. vis. p_{T} / gen. tau p_{T}"),
-                sshv("gv2_gt2", 100, 0.0, 3.0, xtitle="gen. vis. p_{T} / gen. tau p_{T}"),
+                sshv("gv1_gt1", 60, 0.0, 2.0, xtitle="gen. vis. p_{T} 1 (#mu/e/h_{1}) / gen. tau p_{T}"),
+                sshv("gv2_gt2", 60, 0.0, 2.0, xtitle="gen. vis. p_{T} 2 (h_{2}/h/e) / gen. tau p_{T}"),
                 steps.visHistos(),
                 ss.histos.pt("nus", 100, 0.0, 100.0, xtitle="(sum nu) pT (GeV)"),
 
@@ -53,13 +49,12 @@ class look(supy.analysis):
                 sshv(("genMetEt", "pfMetEt"), (100, 100), (0.0, 0.0), (mMax, mMax), xtitle="gen met (GeV);pf met (GeV)"),
                 sshv(("nus_pt", "pfMetEt"), (100, 100), (0.0, 0.0), (mMax, mMax), xtitle="(sum nu) pT (GeV);pf met (GeV)"),
 
+                # ss.filters.multiplicity("measured_tau_leptons", min=2, max=2),
                 # ss.other.touchstuff(["nSelected"]),
-                ss.filters.multiplicity("measured_tau_leptons", min=2, max=2),
-                ss.other.touchstuff(["pfmetsvfitter"]),
+                # ss.other.touchstuff(["pfmetsvfitter"]),
                 # ss.other.touchstuff(["pfmetsvs"]),
+                # steps.svHistos(),
 
-                # ss.filters.label("tauPlots"),
-                # #ss.other.skimmer(mainChain=False, extraVars=pars["extraVars"]),
                 # #displayer.displayer(),
                 ]
 
@@ -96,10 +91,10 @@ class look(supy.analysis):
                 calculables.rho_xy("pfmet"),
                 calculables.gaus(("genmet", "pfmet")),
                 calculables.gaus(("nus", "pfmet")),
-                calculables.measured_tau_leptons(),
-                calculables.has_hadronic_taus(),
-                calculables.svfitter(met="pfmet"),
-                calculables.svs(met="pfmet"),
+                calculables.sv.measured_tau_leptons(),
+                calculables.sv.has_hadronic_taus(),
+                calculables.sv.svfitter(met="pfmet", verbosity=2),
+                calculables.sv.svs(met="pfmet", mc=True, vg=False, pl=False),
                 ]
         return out
 
@@ -108,15 +103,14 @@ class look(supy.analysis):
         h = supy.samples.SampleHolder()
         # xs in pb
 
-        if True:
-            v3 = 'utils.fileListFromDisk("/home/elaird/v3/DY_all_SYNC_tt.root", pruneList=False, isDirectory=False)'
-            h.add('dy_ll', v3, xs=3504.)
-        else:
-            zm = 'utils.fileListFromDisk("/user_data/zmao/13TeV_samples_25ns/%s_inclusive.root", pruneList=False, isDirectory=False)'
-            h.add('dy_tt', zm % 'DY_all_ZTT_SYNC_tt', xs=3504.)
-            h.add('dy_mt', zm % 'DY_all_ZTT_SYNC_mt', xs=3504.)
-            h.add('dy_et', zm % 'DY_all_ZTT_SYNC_et', xs=3504.)
-            h.add('dy_em', zm % 'DY_all_ZTT_SYNC_em', xs=3504.)
+        # h.add('dy_ll', 'utils.fileListFromDisk("/home/elaird/v3/DY_all_SYNC_tt.root", pruneList=False, isDirectory=False)', xs=3504.)
+        # d = 'utils.fileListFromDisk("/user_data/zmao/13TeV_samples_25ns/%s_inclusive.root", pruneList=False, isDirectory=False)'
+        d = 'utils.fileListFromDisk("/user_data/elaird/svSkim-sep18/%s_inclusive.root", pruneList=False, isDirectory=False)'
+
+        h.add('dy_tt', d % 'DY_all_ZTT_SYNC_tt', xs=3504.)
+        h.add('dy_mt', d % 'DY_all_ZTT_SYNC_mt', xs=3504.)
+        h.add('dy_et', d % 'DY_all_ZTT_SYNC_et', xs=3504.)
+        h.add('dy_em', d % 'DY_all_ZTT_SYNC_em', xs=3504.)
         return [h]
 
 
@@ -145,7 +139,7 @@ class look(supy.analysis):
             org.mergeSamples(targetSpec=gopts(new, color), sources=[old])
 
         # org.scale()  # to data
-        org.scale(lumiToUseInAbsenceOfData=20.0e3) # /pb
+        org.scale(lumiToUseInAbsenceOfData=4.0e3) # /pb
         # org.scale(toPdf=True)
 
         supy.plotter(org,
