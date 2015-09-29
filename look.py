@@ -53,7 +53,7 @@ class look(supy.analysis):
                 # ss.other.touchstuff(["nSelected"]),
                 # ss.other.touchstuff(["pfmetsvfitter"]),
                 # ss.other.touchstuff(["pfmetsvs"]),
-                # steps.svHistos(),
+                steps.svHistos(met="pfmet", svs=["mc", "vg", "pl"]),
 
                 # #displayer.displayer(),
                 ]
@@ -105,12 +105,12 @@ class look(supy.analysis):
 
         # h.add('dy_ll', 'utils.fileListFromDisk("/home/elaird/v3/DY_all_SYNC_tt.root", pruneList=False, isDirectory=False)', xs=3504.)
         # d = 'utils.fileListFromDisk("/user_data/zmao/13TeV_samples_25ns/%s_inclusive.root", pruneList=False, isDirectory=False)'
-        d = 'utils.fileListFromDisk("/user_data/elaird/svSkim-sep18/%s_inclusive.root", pruneList=False, isDirectory=False)'
+        d = 'utils.fileListFromDisk("/user_data/elaird/svSkim-sep21/%s_inclusive.root", pruneList=False, isDirectory=False)'
 
-        h.add('dy_tt', d % 'DY_all_ZTT_SYNC_tt', xs=3504.)
-        h.add('dy_mt', d % 'DY_all_ZTT_SYNC_mt', xs=3504.)
-        h.add('dy_et', d % 'DY_all_ZTT_SYNC_et', xs=3504.)
-        h.add('dy_em', d % 'DY_all_ZTT_SYNC_em', xs=3504.)
+        h.add('dy_tt', d % 'DY_all_ZTT_SYNC_tt', xs=3504.)  # fake xs; to be updated with skim eff.
+        h.add('dy_mt', d % 'DY_all_ZTT_SYNC_mt', xs=3504.)  # fake xs; to be updated with skim eff.
+        h.add('dy_et', d % 'DY_all_ZTT_SYNC_et', xs=3504.)  # fake xs; to be updated with skim eff.
+        h.add('dy_em', d % 'DY_all_ZTT_SYNC_em', xs=3504.)  # fake xs; to be updated with skim eff.
         return [h]
 
 
@@ -142,6 +142,14 @@ class look(supy.analysis):
         org.scale(lumiToUseInAbsenceOfData=4.0e3) # /pb
         # org.scale(toPdf=True)
 
+        def yx(h):
+            if "_prof" in h.GetName():
+                ax = h.GetXaxis()
+                f = r.TF1("yx", "x", ax.GetXmin(), ax.GetXmax())
+                f.SetLineWidth(1)
+                f.Draw("same")
+                return f
+
         supy.plotter(org,
                      pdfFileName=self.pdfFileName(org.tag),
                      printImperfectCalcPageIfEmpty=False,
@@ -150,4 +158,5 @@ class look(supy.analysis):
                      rowColors=[r.kBlack, r.kViolet+4],
                      doLog=False,
                      # pegMinimum=0.1,
+                     fitFunc=yx,
                      ).plotAll()
