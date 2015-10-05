@@ -7,7 +7,9 @@ cd supy
 git checkout tweaks
 cd ..
 
+source supy/sites/bn_cmsJob.sh
 source env.sh
+
 ln -s ~/samples-plots/plots_cfg.py .
 # edit plots_cfg.py as desired
 
