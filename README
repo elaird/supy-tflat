@@ -1,14 +1,16 @@
----------------
-| Quick Start |
----------------
-<set up pyROOT>                                      # eg. with a CMSSW area: cd /<somepath>/CMSSW_5_3_7/src && cmsenv
-git clone https://github.com/elaird/supy-tflat.git   # clone repo
+```bash
+git clone https://github.com/elaird/supy-tflat.git
 cd supy-tflat
-git submodule update --init                          # clone supy
-source env.sh                                        # add supy directory to your python path; add supy to your path
-supy example.py --loop 1                             # run the example
 
-----------------
-| Dependencies |
-----------------
-ROOT (>=5.27.06) and python (2.x, x>=6) are required.
+git clone https://github.com/elaird/supy.git
+cd supy
+git checkout tweaks
+cd ..
+
+source env.sh
+ln -s ~/samples-plots/plots_cfg.py .
+# edit plots_cfg.py as desired
+
+# edit svSkim.py (listOfSampleDictionaries) as desired
+supy svSkim.py --loop 4 --slices=-500 --batch
+```
