@@ -258,6 +258,29 @@ class pt_two_nu(supy.wrappedChain.calculable):
         self.lv -= s["gv2"]
         self.value = self.lv.pt()
 
+class rv_sumP4(supy.wrappedChain.calculable):
+    def __init__(self, met=""):
+        self.fixes = ("", met)
+        self.value = supy.utils.LorentzV()
+
+    def update(self, _):
+        s = self.source
+        self.value.SetCoordinates(0.0, 0.0, 0.0, 0.0)
+        self.value += s["rv1"]
+        self.value += s["rv2"]
+
+        met = self.fixes[1]
+        if met:
+            self.value += s[met]
+
+class rDPhi_sumP4_met(supy.wrappedChain.calculable):
+    def __init__(self, met=""):
+        self.met = met
+
+    def update(self, _):
+        s = self.source
+        self.value = r.Math.VectorUtil.DeltaPhi(s["rv_sumP4"], s[self.met])
+
 class genmet(supy.wrappedChain.calculable):
     def __init__(self):
         self.value = supy.utils.LorentzV()
@@ -330,3 +353,29 @@ class nSelected(supy.wrappedChain.calculable):
         print "nSelected =", self.value
 
 
+class xc_jet_labels(supy.wrappedChain.calculable):
+    def __init__(self):
+        self.lv = supy.utils.LorentzV()
+
+    def update(self, _):
+        s = self.source
+        self.value = []
+
+        for i in range(1, 9):
+            p = "jet%d" % i
+            pt = s["%sPt" % p]
+            if pt < 0.0:
+                break
+
+            self.lv.SetCoordinates(s["%sPt" % p], s["%sEta" % p], s["%sPhi" % p], s["%sMass" % p])
+            if r.Math.VectorUtil.DeltaR(s["rv1"], self.lv) < 0.4 or r.Math.VectorUtil.DeltaR(s["rv2"], self.lv) < 0.4:
+                continue
+            self.value.append(i)
+
+
+class xc_jets_highest_pt(supy.wrappedChain.calculable):
+    def update(self, _):
+        self.value = -999.9
+        s = self.source
+        if s["xc_jet_labels"]:
+            self.value = s["jet%dPt" % (s["xc_jet_labels"][0])]
