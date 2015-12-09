@@ -10,7 +10,7 @@ class svSkim(supy.analysis):
 
     def parameters(self):
         return {"met": "pfmet",
-                "sv": ["mc"],
+                "sv": ["mc", "vg", "pl"][:1],
                 "svKeys": ["mass", "massUncert", "massLmax", "pt", "eta", "phi"],
                 "histoNames": {"eventCountWeighted": "initWeightedEvents", "eventCount": "initEvents"},
                 }
