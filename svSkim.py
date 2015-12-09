@@ -6,7 +6,9 @@ import plots_cfg
 
 
 class svSkim(supy.analysis):
+    ### EDIT THESE TWO! ###
     suffix = "inclusive"
+    srcDir = "/user_data/elaird/13TeV_samples_25ns_Spring15_eletronID2"
 
     def parameters(self):
         return {"met": "pfmet",
@@ -49,8 +51,7 @@ class svSkim(supy.analysis):
 
 
     def listOfSampleDictionaries(self):
-        d = "/user_data/elaird/13TeV_samples_25ns_Spring15_eletronID2"
-        cmd = 'utils.fileListFromDisk("%s/%s_%s.root", pruneList=False, isDirectory=False)' % (d, "%s", self.suffix)
+        cmd = 'utils.fileListFromDisk("%s/%s%s.root", pruneList=False, isDirectory=False)' % (self.srcDir, "%s", ("_%s" % self.suffix) if self.suffix else "")
 
         h = supy.samples.SampleHolder()
         for t in plots_cfg.sampleList:
