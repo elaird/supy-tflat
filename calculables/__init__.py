@@ -50,6 +50,16 @@ class histo_bin1(supy.wrappedChain.calculable):
         return out
 
 
+class gen0(supy.wrappedChain.calculable):
+    def update(self, _):
+        self.value = self.source["genEventWeight"]
+
+
+class gen(supy.wrappedChain.calculable):
+    def update(self, _):
+        self.value = self.source["genEventWeight"] / self.source["initWeightedEvents"]
+
+
 class nus(supy.wrappedChain.calculable):
     """global (including neutrinos not from taus)"""
     def __init__(self):
