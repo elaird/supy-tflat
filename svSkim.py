@@ -6,15 +6,14 @@ import plots_cfg
 
 
 class svSkim(supy.analysis):
-    ### EDIT THESE TWO! ###
-    suffix = "inclusive"
-    srcDir = "/user_data/elaird/13TeV_samples_25ns_Spring15_eletronID2"
-
     def parameters(self):
         return {"met": "pfmet",
                 "sv": ["mc", "vg", "pl"][:1],
                 "svKeys": ["mass", "massUncert", "massLmax", "pt", "eta", "phi"],
                 "histoNames": {"eventCountWeighted": "initWeightedEvents", "eventCount": "initEvents"},
+                "dms": ["tt", "mt", "et", "em"],
+                "suffix": "inclusive",
+                "srcDir": "/user_data/elaird/13TeV_samples_25ns_Spring15_eletronID2",
                 }
 
     def listOfSteps(self, pars):
@@ -26,7 +25,7 @@ class svSkim(supy.analysis):
 
         return [supy.steps.printer.progressPrinter(),
                 supy.steps.filters.multiplicity("measured_tau_leptons", min=2, max=2),
-                supy.steps.other.skimmer(mainChain=True, extraVars=extraVars, haddOutput=True, suffix=self.suffix),
+                supy.steps.other.skimmer(mainChain=True, extraVars=extraVars, haddOutput=True, suffix=pars["suffix"]),
                 ]
 
     def listOfCalculables(self, pars):
@@ -51,11 +50,12 @@ class svSkim(supy.analysis):
 
 
     def listOfSampleDictionaries(self):
-        cmd = 'utils.fileListFromDisk("%s/%s%s.root", pruneList=False, isDirectory=False)' % (self.srcDir, "%s", ("_%s" % self.suffix) if self.suffix else "")
+        p = self.parameters()
+        cmd = 'utils.fileListFromDisk("%s/%s%s.root", pruneList=False, isDirectory=False)' % (p["srcDir"], "%s", ("_%s" % p["suffix"]) if p["suffix"] else "")
 
         h = supy.samples.SampleHolder()
         for t in plots_cfg.sampleList:
-            for dm in ["tt", "mt", "et", "em"]:
+            for dm in p["dms"]:
                 name = "%s%s" % (t[1].replace(plots_cfg.dir, ""), dm)
                 name = "".join(name.split("/"))  # remove slashes
                 h.add(name, cmd % name, xs=1.0)  # dummy XS
